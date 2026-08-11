@@ -18,6 +18,10 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('alocacao_refresh_token', payload.refreshToken)
   }
 
+  function setUser(u: AuthUser) {
+    user.value = u
+  }
+
   function clear() {
     user.value = null
     accessToken.value = null
@@ -40,6 +44,7 @@ export const useAuthStore = defineStore('auth', () => {
     isCoordinator,
     isProfessor,
     setAuth,
+    setUser,
     clear,
     initFromStorage,
   }

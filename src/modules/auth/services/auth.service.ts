@@ -1,5 +1,5 @@
 import api from '@/services/api'
-import type { AuthUser } from '@/types'
+import type { AuthUser, IUser } from '@/types'
 
 export interface LoginResult {
   accessToken: string
@@ -36,4 +36,11 @@ export async function forgotPassword(email: string): Promise<{ resetToken?: stri
 /** POST /auth/reset-password — redefine a senha a partir de um token válido. */
 export async function resetPassword(resetToken: string, newPassword: string): Promise<void> {
   await api.post('/auth/reset-password', { resetToken, newPassword })
+}
+
+/** GET /auth/me — retorna o usuário autenticado; usado para restaurar a sessão ao recarregar a página. */
+export async function getCurrentUser(): Promise<AuthUser> {
+  const { data } = await api.get<{ success: true; data: IUser }>('/auth/me')
+  const { id, name, email, role } = data.data
+  return { id, name, email, role }
 }

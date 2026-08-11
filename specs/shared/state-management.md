@@ -87,14 +87,16 @@ export const useAuthStore = defineStore('auth', () => {
 | Action | Descrição |
 |--------|-----------|
 | `setAuth(user, accessToken)` | Persiste dados após login |
+| `setUser(user)` | Define apenas o usuário (usado ao restaurar a sessão via `/auth/me`) |
 | `clear()` | Limpa estado (logout) |
-| `initFromStorage()` | Restaura estado do localStorage na inicialização do app |
+| `initFromStorage()` | Restaura o `accessToken` do localStorage na inicialização do app |
 
 ### Persistência
 
 - `accessToken` → `localStorage` (chave: `alocacao_access_token`)
 - `refreshToken` → `localStorage` (chave: `alocacao_refresh_token`)
 - O `refreshToken` **não** é armazenado no store — apenas no localStorage, consumido pelo interceptor do Axios.
+- **Restauração da sessão:** `initFromStorage()` restaura apenas o `accessToken`. No bootstrap (`main.ts`), havendo token, o app chama `GET /auth/me` e popula o usuário via `setUser()` antes de montar — assim os guards e o header têm `role`/`name` já na primeira navegação. Se a chamada falhar (token inválido mesmo após tentativa de refresh), a sessão é limpa.
 
 ---
 
