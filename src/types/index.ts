@@ -11,6 +11,9 @@ export interface IUser {
   updatedAt: string
 }
 
+/** Subconjunto do usuário retornado pelo login e mantido na sessão do front. */
+export type AuthUser = Pick<IUser, 'id' | 'name' | 'email' | 'role'>
+
 export interface IDepartment {
   id: string
   name: string

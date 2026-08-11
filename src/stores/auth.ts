@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { IUser } from '@/types'
+import type { AuthUser } from '@/types'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<IUser | null>(null)
+  const user = ref<AuthUser | null>(null)
   const accessToken = ref<string | null>(null)
 
   const isAuthenticated = computed(() => !!accessToken.value)
@@ -11,7 +11,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isCoordinator = computed(() => user.value?.role === 'coordinator')
   const isProfessor = computed(() => user.value?.role === 'professor')
 
-  function setAuth(payload: { user: IUser; accessToken: string; refreshToken: string }) {
+  function setAuth(payload: { user: AuthUser; accessToken: string; refreshToken: string }) {
     user.value = payload.user
     accessToken.value = payload.accessToken
     localStorage.setItem('alocacao_access_token', payload.accessToken)
