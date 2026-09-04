@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { authRoutes } from '@/modules/auth'
 import { dashboardRoutes } from '@/modules/dashboard'
+import { departmentRoutes } from '@/modules/department'
 import { useAuthStore } from '@/stores/auth'
 
 declare module 'vue-router' {
@@ -16,6 +17,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/dashboard' },
   ...authRoutes,
   ...dashboardRoutes,
+  ...departmentRoutes,
   { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
 ]
 

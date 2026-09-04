@@ -1,6 +1,6 @@
 # Módulo 2 — Gerenciamento de Departamentos
 
-**Status:** `draft`
+**Status:** `implemented`
 **Depende de:** Módulo 1 (Auth)
 **API correspondente:** [`AlocacaoDeSalas-API/specs/modules/02-departments.md`](../../../AlocacaoDeSalas-API/specs/modules/02-departments.md)
 
@@ -138,11 +138,11 @@ PATCH /departments/:id/deactivate
 
 ## Critérios de Aceitação
 
-- [ ] Admin consegue criar departamento com nome e código únicos
-- [ ] Nome duplicado exibe erro inline no campo correto
-- [ ] Código duplicado exibe erro inline no campo correto
-- [ ] Listagem exibe paginação corretamente
-- [ ] Busca textual com debounce filtra a listagem
-- [ ] Coordinator vê a view de detalhe em somente leitura
-- [ ] Desativação abre diálogo de confirmação antes de executar
-- [ ] Departamento desativado exibe badge "Inativo" na listagem
+- [x] Admin consegue criar departamento com nome e código únicos
+- [x] Nome duplicado exibe erro inline no campo correto
+- [x] Código duplicado exibe erro inline no campo correto
+- [x] Listagem exibe paginação corretamente
+- [x] Busca textual com debounce filtra a listagem
+- [x] Coordinator vê a view de detalhe em somente leitura
+- [x] Desativação abre diálogo de confirmação antes de executar
+- [x] Departamento desativado exibe badge "Inativo" na listagem
