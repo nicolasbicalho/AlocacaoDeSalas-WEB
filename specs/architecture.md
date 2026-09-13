@@ -43,7 +43,7 @@ src/
     │   ├── components/        # Componentes específicos do módulo
     │   ├── stores/            # Store Pinia do módulo (se necessário)
     │   └── index.ts           # Re-exporta rotas do módulo
-    ├── department/
+    ├── institute/
     ├── user/
     ├── project/
     ├── dataUpload/
@@ -105,7 +105,7 @@ Dois guards globais no `router/index.ts`:
 ```typescript
 // Cada rota define os roles permitidos via meta:
 {
-  path: '/departments',
+  path: '/institutes',
   meta: { requiresAuth: true, roles: ['admin'] }
 }
 ```
@@ -117,14 +117,14 @@ Todo o código (variáveis, funções, tipos, props, emits) em **inglês**. Text
 
 ### Componentes
 - Sempre usar `<script setup lang="ts">`
-- Nome dos arquivos: `PascalCase` (ex: `DepartmentList.vue`, `LoginView.vue`)
+- Nome dos arquivos: `PascalCase` (ex: `InstituteList.vue`, `LoginView.vue`)
 - Componentes de view terminam em `View` (ex: `LoginView.vue`)
 - Componentes compartilhados ficam em `src/shared/components/`
 
 ### Stores Pinia
-- Um arquivo por domínio: `auth.ts`, `department.store.ts`
+- Um arquivo por domínio: `auth.ts`, `project.store.ts`
 - Sempre `defineStore` com setup function (não options API)
-- Nomes de store: `useAuthStore`, `useDepartmentStore`
+- Nomes de store: `useAuthStore`, `useProjectStore`
 
 ### Tipagem
 - Nunca usar `any` — sempre tipar explicitamente
@@ -161,10 +161,10 @@ Todas as variáveis expostas ao cliente devem ter o prefixo `VITE_`.
 
 | Elemento | Convenção | Exemplo |
 |----------|-----------|---------|
-| Arquivos de componente | `PascalCase` | `DepartmentCard.vue` |
-| Arquivos de view | `PascalCase` + sufixo `View` | `DepartmentListView.vue` |
-| Arquivos de store | `camelCase` + sufixo `.store.ts` | `department.store.ts` |
-| Arquivos de serviço | `camelCase` + sufixo `.service.ts` | `department.service.ts` |
-| Pastas de módulo | `camelCase` singular | `department/`, `dataUpload/` |
+| Arquivos de componente | `PascalCase` | `InstituteForm.vue` |
+| Arquivos de view | `PascalCase` + sufixo `View` | `InstituteListView.vue` |
+| Arquivos de store | `camelCase` + sufixo `.store.ts` | `project.store.ts` |
+| Arquivos de serviço | `camelCase` + sufixo `.service.ts` | `institute.service.ts` |
+| Pastas de módulo | `camelCase` singular | `institute/`, `dataUpload/` |
 | Funções composable | prefixo `use` | `useAuthStore`, `usePagination` |
-| Rotas (path) | `kebab-case` plural | `/departments`, `/projects/:id/rooms` |
+| Rotas (path) | `kebab-case` plural | `/institutes`, `/projects/:id/rooms` |

@@ -136,7 +136,7 @@ Notificações temporárias (toasts). Gerenciado globalmente via `useUiStore`.
 Uso:
 ```typescript
 const ui = useUiStore()
-ui.toast({ message: 'Departamento criado com sucesso', variant: 'success' })
+ui.toast({ message: 'Instituto criado com sucesso', variant: 'success' })
 ui.toast({ message: 'Erro ao salvar', variant: 'error' })
 ```
 

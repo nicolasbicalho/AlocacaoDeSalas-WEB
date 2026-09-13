@@ -58,7 +58,7 @@ export const useAuthStore = defineStore('auth', () => {
 
 1. **Sem chamadas HTTP dentro do store** — HTTP fica em `src/services/api.ts` ou serviços de módulo. O store apenas armazena e transforma dados.
 2. **Nomes de store únicos** — o primeiro argumento do `defineStore` é o ID; usar o nome do arquivo sem extensão.
-3. **Exportar sempre com `use` prefix** — `useAuthStore`, `useDepartmentStore`.
+3. **Exportar sempre com `use` prefix** — `useAuthStore`, `useProjectStore`.
 4. **Não importar store dentro de outro store** — comunicação entre stores via composable na view.
 5. **Persistência de token** — `accessToken` e `refreshToken` são persistidos em `localStorage` manualmente no `auth.ts`.
 
@@ -133,9 +133,9 @@ interface Toast {
 ```typescript
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
-import { useDepartmentStore } from '@/modules/department/stores/department.store'
+import { useProjectStore } from '@/modules/project/stores/project.store'
 
 const auth = useAuthStore()
-const departmentStore = useDepartmentStore()
+const projectStore = useProjectStore()
 </script>
 ```

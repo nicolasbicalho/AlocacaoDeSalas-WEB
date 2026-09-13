@@ -5,7 +5,7 @@ export interface IUser {
   name: string
   email: string
   role: UserRole
-  departmentId?: string
+  instituteId?: string
   active: boolean
   createdAt: string
   updatedAt: string
@@ -14,7 +14,7 @@ export interface IUser {
 /** Subconjunto do usuário retornado pelo login e mantido na sessão do front. */
 export type AuthUser = Pick<IUser, 'id' | 'name' | 'email' | 'role'>
 
-export interface IDepartment {
+export interface IInstitute {
   id: string
   name: string
   code: string
@@ -27,7 +27,7 @@ export interface IBuilding {
   id: string
   name: string
   code: string
-  departmentId: string
+  instituteId: string
   latitude?: number
   longitude?: number
   active: boolean
@@ -57,7 +57,7 @@ export interface IProject {
   id: string
   name: string
   semester: string
-  departmentId: string
+  instituteId: string
   status: ProjectStatus
   createdAt: string
   updatedAt: string

@@ -38,11 +38,11 @@ async function handleLogout() {
           </RouterLink>
           <RouterLink
             v-if="auth.isAdmin"
-            to="/departments"
+            to="/institutes"
             class="text-gray-600 transition hover:text-primary-700"
             active-class="font-medium text-primary-700"
           >
-            Departamentos
+            Institutos
           </RouterLink>
         </nav>
       </div>

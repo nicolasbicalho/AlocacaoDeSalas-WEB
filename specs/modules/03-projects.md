@@ -1,7 +1,7 @@
 # Módulo 3 — Gerenciamento de Projetos
 
 **Status:** `draft`
-**Depende de:** Módulo 1 (Auth), Módulo 2 (Departments)
+**Depende de:** Módulo 1 (Auth), Módulo 2 (Institutes)
 **API correspondente:** `AlocacaoDeSalas-API/specs/modules/03-projects.md` (a ser criado)
 
 ---
@@ -10,7 +10,7 @@
 
 Um **Projeto** representa um ciclo de alocação correspondente a um semestre ou período letivo. É o ponto central da aplicação — todos os dados importados (prédios, salas, turmas) e as alocações geradas pertencem a um projeto específico.
 
-O coordinator cria e opera projetos. O professor e o admin visualizam. Apenas um projeto pode estar com status `active` por departamento.
+O coordinator cria e opera projetos. O professor e o admin visualizam. Apenas um projeto pode estar com status `active` por instituto.
 
 ---
 
@@ -44,7 +44,7 @@ interface IProject {
   id: string
   name: string          // ex: "2025/2"
   semester: string      // ex: "2025.2"
-  departmentId: string
+  instituteId: string
   status: ProjectStatus
   createdAt: string
   updatedAt: string
@@ -79,7 +79,7 @@ Exibe: nome do projeto, semestre, status (`ProjectStatusBadge`), data de criaç�
 ### Comportamento
 
 1. Ao montar, busca projetos via `GET /projects`
-2. Coordinator vê apenas projetos do seu departamento
+2. Coordinator vê apenas projetos do seu instituto
 3. Admin vê todos os projetos
 4. Filtro de status não recarrega a página — filtra localmente se lista for pequena, ou via query param se paginado
 5. "Abrir" navega para `/projects/:id`
@@ -157,7 +157,7 @@ PATCH /projects/:id/close
 
 ## Critérios de Aceitação
 
-- [ ] Coordinator vê apenas projetos do seu departamento
+- [ ] Coordinator vê apenas projetos do seu instituto
 - [ ] Admin vê todos os projetos
 - [ ] Professor visualiza projetos mas não pode criar ou ativar
 - [ ] Projeto criado começa com status `draft`

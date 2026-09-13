@@ -17,24 +17,24 @@
 
 Testam funções puras: composables (`use*`), funções utilitárias e serviços HTTP com chamadas mockadas.
 
-- **Localização:** ao lado do arquivo testado (`department.service.test.ts`)
+- **Localização:** ao lado do arquivo testado (`institute.service.test.ts`)
 - **HTTP:** mockado via `vi.mock` ou MSW
 - **Sem Vue:** sem montar componentes — testa lógica pura
 
 ```typescript
-// department.service.test.ts
+// institute.service.test.ts
 import { vi, describe, it, expect } from 'vitest'
-import { listDepartments } from './department.service'
+import { listInstitutes } from './institute.service'
 import api from '@/services/api'
 
 vi.mock('@/services/api')
 
-describe('listDepartments', () => {
-  it('should return paginated departments', async () => {
+describe('listInstitutes', () => {
+  it('should return paginated institutes', async () => {
     vi.mocked(api.get).mockResolvedValue({
       data: { success: true, data: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 0 } },
     })
-    const result = await listDepartments()
+    const result = await listInstitutes()
     expect(result.data).toEqual([])
   })
 })
@@ -44,21 +44,21 @@ describe('listDepartments', () => {
 
 Testam componentes Vue de forma isolada — renderização, interações, emissões.
 
-- **Localização:** ao lado do componente (`DepartmentCard.test.ts`)
+- **Localização:** ao lado do componente (`InstituteStatusBadge.test.ts`)
 - **Ferramentas:** Vue Test Utils + @testing-library/vue
 - **Mocks:** props injetadas diretamente; stores mockadas com `createTestingPinia`
 
 ```typescript
-// DepartmentCard.test.ts
+// InstituteStatusBadge.test.ts
 import { render, screen } from '@testing-library/vue'
-import DepartmentCard from './DepartmentCard.vue'
+import InstituteStatusBadge from './InstituteStatusBadge.vue'
 
-describe('DepartmentCard', () => {
-  it('should display department name and code', () => {
-    render(DepartmentCard, {
-      props: { department: { id: '1', name: 'TI', code: 'TI', active: true } },
+describe('InstituteStatusBadge', () => {
+  it('should display "Ativo" when active is true', () => {
+    render(InstituteStatusBadge, {
+      props: { active: true },
     })
-    expect(screen.getByText('TI')).toBeInTheDocument()
+    expect(screen.getByText('Ativo')).toBeInTheDocument()
   })
 })
 ```
@@ -140,7 +140,7 @@ O MSW intercepta as chamadas em runtime de teste — não é necessário um serv
 | Módulo | Unitário | Componente | Integração |
 |--------|----------|------------|------------|
 | Auth | `pending` | `pending` | `pending` |
-| Departments | `pending` | `pending` | `pending` |
+| Institutes | `pending` | `pending` | `pending` |
 | Projects | `pending` | `pending` | `pending` |
 | Data Upload | `pending` | `pending` | `pending` |
 | Allocation | `pending` | `pending` | `pending` |

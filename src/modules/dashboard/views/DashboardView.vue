@@ -20,7 +20,7 @@ const roleLabels: Record<string, string> = {
       Perfil: {{ roleLabels[auth.user.role] ?? auth.user.role }}
     </p>
     <div class="mt-6 rounded-lg border border-dashed border-gray-300 bg-white p-6 text-sm text-gray-500">
-      Os módulos (departamentos, projetos, alocações e relatórios) aparecerão aqui conforme forem
+      Os módulos (institutos, projetos, alocações e relatórios) aparecerão aqui conforme forem
       implementados.
     </div>
   </div>

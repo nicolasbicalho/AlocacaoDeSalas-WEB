@@ -62,7 +62,7 @@ defineExpose({
     <AppInput
       v-model="name"
       label="Nome"
-      placeholder="Tecnologia da Informação"
+      placeholder="Instituto da Computação"
       :error="errors.name"
       :disabled="readonly || loading"
       required
@@ -70,7 +70,7 @@ defineExpose({
     <AppInput
       v-model="code"
       label="Código"
-      placeholder="TI"
+      placeholder="IC"
       :error="errors.code"
       :disabled="readonly || loading"
       required

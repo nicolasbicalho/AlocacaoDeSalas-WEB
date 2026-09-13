@@ -19,7 +19,7 @@ Este diretório contém todas as especificações do projeto frontend seguindo o
 | # | Módulo | Arquivo | Status |
 |---|--------|---------|--------|
 | 1 | Autenticação e Autorização | [01-auth.md](./modules/01-auth.md) | `implemented` |
-| 2 | Gerenciamento de Departamentos | [02-departments.md](./modules/02-departments.md) | `implemented` |
+| 2 | Gerenciamento de Institutos | [02-institutes.md](./modules/02-institutes.md) | `implemented` |
 <!-- | 3 | Gerenciamento de Projetos | [03-projects.md](./modules/03-projects.md) | `draft` |
 | 4 | Cadastro de Dados Base (Uploads) | [04-data-upload.md](./modules/04-data-upload.md) | `draft` |
 | 5 | Alocação Automática | [05-auto-allocation.md](./modules/05-auto-allocation.md) | `draft` |
@@ -45,7 +45,7 @@ Este diretório contém todas as especificações do projeto frontend seguindo o
 ## Ordem de Implementação Recomendada
 
 ```
-01-auth → 02-departments → 03-projects → 04-data-upload → 05-auto-allocation → 06-manual-allocation → 07-reports
+01-auth → 02-institutes → 03-projects → 04-data-upload → 05-auto-allocation → 06-manual-allocation → 07-reports
 ```
 
 Cada módulo depende dos anteriores — não implementar fora de ordem.

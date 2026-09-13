@@ -14,7 +14,7 @@ O processo manual de alocação de salas é propenso a conflitos, subutilizaçã
 
 | Role | Acesso |
 |------|--------|
-| `admin` | Gerenciamento de usuários, departamentos e toda a plataforma |
+| `admin` | Gerenciamento de usuários, institutos e toda a plataforma |
 | `coordinator` | Criação de projetos, importação de dados, execução e ajuste de alocações, relatórios |
 | `professor` | Visualização de alocações e relatórios — somente leitura |
 
@@ -24,9 +24,9 @@ Cada rota do frontend verifica o role do usuário autenticado. Tentativa de aces
 
 | Termo | Definição |
 |-------|-----------|
-| **Departamento** | Unidade organizacional; agrupa prédios e coordenadores |
+| **Instituto** | Unidade organizacional gestora; dono dos prédios e agrupa coordenadores |
 | **Projeto** | Ciclo de alocação de um semestre/período letivo |
-| **Prédio** | Estrutura física pertencente a um departamento |
+| **Prédio** | Estrutura física pertencente a um instituto |
 | **Sala** | Espaço físico dentro de um prédio (tipo, capacidade, recursos) |
 | **Turma** | Grupo de alunos em uma disciplina com professor e grade de horários |
 | **Alocação** | Atribuição de turma a sala em horário específico dentro de um projeto |
@@ -37,7 +37,7 @@ Cada rota do frontend verifica o role do usuário autenticado. Tentativa de aces
 
 ```
 1. Usuário acessa /login → autentica com e-mail e senha
-2. Admin cria departamentos em /departments
+2. Admin cria institutos em /institutes
 3. Admin cria usuários (coordinators, professors) em /users
 4. Coordinator acessa /projects → cria um projeto (ex: "2025/2")
 5. Coordinator acessa /projects/:id/upload → importa prédios, salas e turmas
@@ -50,7 +50,7 @@ Cada rota do frontend verifica o role do usuário autenticado. Tentativa de aces
 
 ### Incluído
 - Tela de login, logout e recuperação de senha
-- Gerenciamento de departamentos (admin)
+- Gerenciamento de institutos (admin)
 - Gerenciamento de usuários (admin)
 - Criação e listagem de projetos (coordinator)
 - Upload de dados base via arquivo (coordinator)

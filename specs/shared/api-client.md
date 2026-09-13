@@ -54,17 +54,17 @@ Authorization: Bearer <accessToken>
 Cada módulo expõe um serviço HTTP em `src/modules/<nome>/services/<nome>.service.ts`. Os serviços importam a instância `api` e encapsulam as chamadas.
 
 ```typescript
-// src/modules/department/services/department.service.ts
+// src/modules/institute/services/institute.service.ts
 import api from '@/services/api'
-import type { IDepartment, CreateDepartmentDto, PaginatedResponse } from '@/types'
+import type { IInstitute, ApiSuccess, PaginatedResponse } from '@/types'
 
-export async function listDepartments(params?: { page?: number; limit?: number; search?: string }) {
-  const { data } = await api.get<PaginatedResponse<IDepartment>>('/departments', { params })
+export async function listInstitutes(params?: { page?: number; limit?: number; search?: string }) {
+  const { data } = await api.get<PaginatedResponse<IInstitute>>('/institutes', { params })
   return data
 }
 
-export async function createDepartment(dto: CreateDepartmentDto) {
-  const { data } = await api.post<{ success: boolean; data: IDepartment }>('/departments', dto)
+export async function createInstitute(payload: { name: string; code: string }) {
+  const { data } = await api.post<ApiSuccess<IInstitute>>('/institutes', payload)
   return data.data
 }
 ```
@@ -117,22 +117,22 @@ interface ApiError {
 ```typescript
 <script setup lang="ts">
 import { ref } from 'vue'
-import { createDepartment } from '@/modules/department/services/department.service'
+import { createInstitute } from '@/modules/institute/services/institute.service'
 import { useUiStore } from '@/stores/ui'
 import { isAxiosError } from 'axios'
 
 const ui = useUiStore()
 const loading = ref(false)
 
-async function handleSubmit(dto: CreateDepartmentDto) {
+async function handleSubmit(payload: { name: string; code: string }) {
   loading.value = true
   try {
-    await createDepartment(dto)
-    ui.toast({ message: 'Departamento criado com sucesso', variant: 'success' })
+    await createInstitute(payload)
+    ui.toast({ message: 'Instituto criado com sucesso', variant: 'success' })
   } catch (err) {
     if (isAxiosError(err)) {
       const code = err.response?.data?.error?.code
-      if (code === 'DEPARTMENT_NAME_EXISTS') {
+      if (code === 'INSTITUTE_NAME_EXISTS') {
         // exibe erro no campo do formulário
         return
       }

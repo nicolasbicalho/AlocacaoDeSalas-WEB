@@ -19,9 +19,9 @@
 /users                    → UserListView (AppLayout) — roles: admin
 /users/new                → UserCreateView (AppLayout) — roles: admin
 
-/departments              → DepartmentListView (AppLayout) — roles: admin
-/departments/new          → DepartmentCreateView (AppLayout) — roles: admin
-/departments/:id          → DepartmentDetailView (AppLayout) — roles: admin, coordinator
+/institutes               → InstituteListView (AppLayout) — roles: admin
+/institutes/new           → InstituteCreateView (AppLayout) — roles: admin
+/institutes/:id           → InstituteDetailView (AppLayout) — roles: admin, coordinator
 
 /projects                 → ProjectListView (AppLayout) — roles: admin, coordinator, professor
 /projects/new             → ProjectCreateView (AppLayout) — roles: coordinator
@@ -38,23 +38,23 @@
 Rotas são definidas em `src/router/index.ts`. Cada módulo exporta seu array de rotas e o router central os agrega:
 
 ```typescript
-// src/modules/department/index.ts
+// src/modules/institute/index.ts
 import type { RouteRecordRaw } from 'vue-router'
 
-export const departmentRoutes: RouteRecordRaw[] = [
+export const instituteRoutes: RouteRecordRaw[] = [
   {
-    path: '/departments',
-    component: () => import('./views/DepartmentListView.vue'),
+    path: '/institutes',
+    component: () => import('./views/InstituteListView.vue'),
     meta: { requiresAuth: true, roles: ['admin'] },
   },
   {
-    path: '/departments/new',
-    component: () => import('./views/DepartmentCreateView.vue'),
+    path: '/institutes/new',
+    component: () => import('./views/InstituteCreateView.vue'),
     meta: { requiresAuth: true, roles: ['admin'] },
   },
   {
-    path: '/departments/:id',
-    component: () => import('./views/DepartmentDetailView.vue'),
+    path: '/institutes/:id',
+    component: () => import('./views/InstituteDetailView.vue'),
     meta: { requiresAuth: true, roles: ['admin', 'coordinator'] },
   },
 ]
@@ -64,14 +64,14 @@ export const departmentRoutes: RouteRecordRaw[] = [
 // src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
 import { authRoutes } from '@/modules/auth'
-import { departmentRoutes } from '@/modules/department'
+import { instituteRoutes } from '@/modules/institute'
 // ...
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     ...authRoutes,
-    ...departmentRoutes,
+    ...instituteRoutes,
     // ...
   ],
 })
@@ -105,9 +105,11 @@ Executado após `authGuard`. Se `meta.roles` está definido e o role do usuário
 
 | Role | Home |
 |------|------|
-| `admin` | `/users` |
-| `coordinator` | `/projects` |
-| `professor` | `/projects` |
+| `admin` | `/dashboard` |
+| `coordinator` | `/dashboard` |
+| `professor` | `/dashboard` |
+
+> Por ora todos os roles convergem para `/dashboard`. Conforme os módulos (users, projects, ...) forem implementados, os destinos podem ser especializados por role.
 
 ### Redirect após login
 
@@ -120,7 +122,7 @@ Após login bem-sucedido, o router verifica `route.query.redirect` e navega para
 Todas as views usam **dynamic import** para lazy loading:
 
 ```typescript
-component: () => import('./views/DepartmentListView.vue')
+component: () => import('./views/InstituteListView.vue')
 ```
 
 Nunca importar views diretamente no router — impede o code splitting.
@@ -130,6 +132,6 @@ Nunca importar views diretamente no router — impede o code splitting.
 ## Convenções de Path
 
 - `kebab-case` para todos os paths: `/forgot-password`, `/data-upload`
-- IDs de recurso como params: `/projects/:id`, `/departments/:id`
+- IDs de recurso como params: `/projects/:id`, `/institutes/:id`
 - Sub-recursos como paths aninhados: `/projects/:id/allocation`
 - Rotas de criação como `/new` ao invés de `/create`
