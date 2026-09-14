@@ -56,8 +56,8 @@ Cada rota do frontend verifica o role do usuário autenticado. Tentativa de aces
 - Visualização e execução de alocação automática (user)
 - Ajustes manuais pós-alocação (user)
 - Relatórios de ocupação e exportação (user)
+- Tema claro/escuro (dark mode) com preferência salva
 
 ### Fora do escopo (versão atual)
 - Notificações em tempo real (WebSocket)
-- Tema escuro
 - Aplicativo mobile / PWA

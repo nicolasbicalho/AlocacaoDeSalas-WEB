@@ -67,7 +67,7 @@ onMounted(fetchProjects)
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-gray-800">Projetos</h1>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Projetos</h1>
       <AppButton v-if="auth.isUser" @click="router.push('/projects/new')">Novo projeto</AppButton>
     </div>
 
@@ -78,15 +78,15 @@ onMounted(fetchProjects)
         type="button"
         class="rounded-full border px-3 py-1 text-sm transition"
         :class="status === opt.value
-          ? 'border-primary-700 bg-white font-medium text-primary-700'
-          : 'border-gray-200 text-gray-600 hover:bg-gray-50'"
+          ? 'border-primary-700 bg-white font-medium text-primary-700 dark:border-primary-400 dark:bg-gray-800 dark:text-primary-400'
+          : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'"
         @click="applyFilter(opt.value)"
       >
         {{ opt.label }}
       </button>
     </div>
 
-    <div v-if="loading" class="flex justify-center py-16 text-gray-400">
+    <div v-if="loading" class="flex justify-center py-16 text-gray-400 dark:text-gray-500">
       <AppSpinner size="lg" />
     </div>
 

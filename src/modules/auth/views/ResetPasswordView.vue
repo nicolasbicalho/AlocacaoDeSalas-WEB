@@ -66,7 +66,7 @@ const onSubmit = handleSubmit(async (values) => {
 
 <template>
   <AuthCard title="Redefinir senha">
-    <div v-if="done" class="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+    <div v-if="done" class="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-950/40 dark:text-green-300">
       Senha redefinida com sucesso. Redirecionando para o login…
     </div>
     <form v-else class="flex flex-col gap-4" @submit.prevent="onSubmit">
@@ -86,11 +86,11 @@ const onSubmit = handleSubmit(async (values) => {
         :error="errors.confirmPassword"
         required
       />
-      <p v-if="formError" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+      <p v-if="formError" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
         {{ formError }}
       </p>
       <AppButton type="submit" :loading="loading" class="w-full">Redefinir senha</AppButton>
-      <RouterLink to="/login" class="text-center text-sm text-primary-600 hover:underline">
+      <RouterLink to="/login" class="text-center text-sm text-primary-600 hover:underline dark:text-primary-400">
         Voltar para login
       </RouterLink>
     </form>

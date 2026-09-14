@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { logout as logoutRequest } from '@/modules/auth/services/auth.service'
 import AppButton from '@/shared/components/AppButton.vue'
+import ThemeToggle from '@/shared/components/ThemeToggle.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -24,44 +25,45 @@ async function handleLogout() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <header class="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <header class="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-700 dark:bg-gray-800">
       <div class="flex items-center gap-6">
-        <span class="text-lg font-semibold text-primary-700">AlocaçãoDeSalas</span>
+        <span class="text-lg font-semibold text-primary-700 dark:text-primary-400">AlocaçãoDeSalas</span>
         <nav class="flex items-center gap-4 text-sm">
           <RouterLink
             to="/dashboard"
-            class="text-gray-600 transition hover:text-primary-700"
-            active-class="font-medium text-primary-700"
+            class="text-gray-600 transition hover:text-primary-700 dark:text-gray-300 dark:hover:text-primary-400"
+            active-class="font-medium text-primary-700 dark:text-primary-400"
           >
             Início
           </RouterLink>
           <RouterLink
             v-if="auth.isAdmin"
             to="/institutes"
-            class="text-gray-600 transition hover:text-primary-700"
-            active-class="font-medium text-primary-700"
+            class="text-gray-600 transition hover:text-primary-700 dark:text-gray-300 dark:hover:text-primary-400"
+            active-class="font-medium text-primary-700 dark:text-primary-400"
           >
             Institutos
           </RouterLink>
           <RouterLink
             to="/projects"
-            class="text-gray-600 transition hover:text-primary-700"
-            active-class="font-medium text-primary-700"
+            class="text-gray-600 transition hover:text-primary-700 dark:text-gray-300 dark:hover:text-primary-400"
+            active-class="font-medium text-primary-700 dark:text-primary-400"
           >
             Projetos
           </RouterLink>
           <RouterLink
             to="/buildings"
-            class="text-gray-600 transition hover:text-primary-700"
-            active-class="font-medium text-primary-700"
+            class="text-gray-600 transition hover:text-primary-700 dark:text-gray-300 dark:hover:text-primary-400"
+            active-class="font-medium text-primary-700 dark:text-primary-400"
           >
             Prédios
           </RouterLink>
         </nav>
       </div>
       <div class="flex items-center gap-4">
-        <span v-if="auth.user" class="text-sm text-gray-600">{{ auth.user.name }}</span>
+        <ThemeToggle />
+        <span v-if="auth.user" class="text-sm text-gray-600 dark:text-gray-300">{{ auth.user.name }}</span>
         <AppButton variant="ghost" size="sm" :loading="loggingOut" @click="handleLogout">Sair</AppButton>
       </div>
     </header>

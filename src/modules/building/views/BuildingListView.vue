@@ -72,7 +72,7 @@ function changePage(target: number) {
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-gray-800">Prédios</h1>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Prédios</h1>
       <AppButton v-if="auth.isUser" @click="router.push('/buildings/new')">Novo prédio</AppButton>
     </div>
 

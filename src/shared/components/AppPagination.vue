@@ -10,11 +10,11 @@ function go(target: number) {
 </script>
 
 <template>
-  <div class="flex items-center justify-between text-sm text-gray-600">
+  <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
     <span>{{ total }} registro(s)</span>
     <div class="flex items-center gap-2">
       <button
-        class="rounded border border-gray-300 px-2 py-1 transition hover:bg-gray-50 disabled:opacity-50"
+        class="rounded border border-gray-300 px-2 py-1 transition hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:hover:bg-gray-800"
         :disabled="page <= 1"
         @click="go(page - 1)"
       >
@@ -22,7 +22,7 @@ function go(target: number) {
       </button>
       <span>Página {{ page }} de {{ Math.max(totalPages, 1) }}</span>
       <button
-        class="rounded border border-gray-300 px-2 py-1 transition hover:bg-gray-50 disabled:opacity-50"
+        class="rounded border border-gray-300 px-2 py-1 transition hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:hover:bg-gray-800"
         :disabled="page >= totalPages"
         @click="go(page + 1)"
       >

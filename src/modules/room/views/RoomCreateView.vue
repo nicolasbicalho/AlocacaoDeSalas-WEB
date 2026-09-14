@@ -36,15 +36,15 @@ async function onSubmit(values: { name: string; code: string; capacity: number; 
 
 <template>
   <div class="mx-auto flex max-w-lg flex-col gap-4">
-    <nav class="text-sm text-gray-500">
+    <nav class="text-sm text-gray-500 dark:text-gray-400">
       <RouterLink to="/buildings" class="hover:underline">Prédios</RouterLink>
       <span> / </span>
       <RouterLink :to="`/buildings/${buildingId}/rooms`" class="hover:underline">Salas</RouterLink>
       <span> / Nova sala</span>
     </nav>
-    <h1 class="text-2xl font-bold text-gray-800">Nova sala</h1>
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Nova sala</h1>
 
-    <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+    <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <RoomForm ref="formRef" :loading="loading" submit-label="Criar sala" @submit="onSubmit">
         <template #actions>
           <AppButton variant="secondary" type="button" :disabled="loading" @click="router.push(`/buildings/${buildingId}/rooms`)">

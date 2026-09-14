@@ -61,8 +61,8 @@ function onTypeChange(row: Row) {
 
 <template>
   <div class="flex flex-col gap-2">
-    <span class="text-sm font-medium text-gray-700">Características (atributos)</span>
-    <p v-if="rows.length === 0" class="text-sm text-gray-400">
+    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Características (atributos)</span>
+    <p v-if="rows.length === 0" class="text-sm text-gray-400 dark:text-gray-500">
       Nenhum atributo. Adicione características como projetor, computadores, acessibilidade…
     </p>
 
@@ -71,12 +71,12 @@ function onTypeChange(row: Row) {
         v-model="row.key"
         :disabled="readonly"
         placeholder="chave (ex: projector)"
-        class="w-1/3 rounded-md border border-gray-300 px-2 py-1 text-sm disabled:bg-gray-100"
+        class="w-1/3 rounded-md border border-gray-300 px-2 py-1 text-sm disabled:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700"
       />
       <select
         v-model="row.type"
         :disabled="readonly"
-        class="rounded-md border border-gray-300 px-2 py-1 text-sm disabled:bg-gray-100"
+        class="rounded-md border border-gray-300 px-2 py-1 text-sm disabled:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700"
         @change="onTypeChange(row)"
       >
         <option value="text">Texto</option>
@@ -89,7 +89,7 @@ function onTypeChange(row: Row) {
         :disabled="readonly"
         type="text"
         placeholder="valor"
-        class="flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm disabled:bg-gray-100"
+        class="flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm disabled:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700"
       />
       <input
         v-else-if="row.type === 'number'"
@@ -97,9 +97,9 @@ function onTypeChange(row: Row) {
         :disabled="readonly"
         type="number"
         placeholder="0"
-        class="flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm disabled:bg-gray-100"
+        class="flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm disabled:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700"
       />
-      <label v-else class="flex flex-1 items-center gap-2 text-sm text-gray-600">
+      <label v-else class="flex flex-1 items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
         <input v-model="row.value" :disabled="readonly" type="checkbox" /> Sim
       </label>
       <button
@@ -116,7 +116,7 @@ function onTypeChange(row: Row) {
     <button
       v-if="!readonly"
       type="button"
-      class="self-start text-sm font-medium text-primary-700 hover:underline"
+      class="self-start text-sm font-medium text-primary-700 hover:underline dark:text-primary-400"
       @click="addRow"
     >
       + Adicionar atributo

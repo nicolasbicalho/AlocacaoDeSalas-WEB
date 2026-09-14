@@ -41,20 +41,20 @@ const onSubmit = handleSubmit(async (values) => {
 <template>
   <AuthCard title="Recuperar senha" subtitle="Informe seu e-mail para receber as instruções">
     <div v-if="submitted" class="flex flex-col gap-4">
-      <p class="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+      <p class="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-950/40 dark:text-green-300">
         Se o e-mail estiver cadastrado, você receberá as instruções.
       </p>
-      <div v-if="devResetToken" class="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+      <div v-if="devResetToken" class="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
         <p class="font-semibold">Token de teste (ambiente de desenvolvimento):</p>
         <code class="break-all">{{ devResetToken }}</code>
         <RouterLink
           :to="`/reset-password?token=${devResetToken}`"
-          class="mt-2 block font-medium text-primary-600 hover:underline"
+          class="mt-2 block font-medium text-primary-600 hover:underline dark:text-primary-400"
         >
           Redefinir senha com este token →
         </RouterLink>
       </div>
-      <RouterLink to="/login" class="text-center text-sm text-primary-600 hover:underline">
+      <RouterLink to="/login" class="text-center text-sm text-primary-600 hover:underline dark:text-primary-400">
         Voltar para login
       </RouterLink>
     </div>
@@ -68,7 +68,7 @@ const onSubmit = handleSubmit(async (values) => {
         required
       />
       <AppButton type="submit" :loading="loading" class="w-full">Enviar</AppButton>
-      <RouterLink to="/login" class="text-center text-sm text-primary-600 hover:underline">
+      <RouterLink to="/login" class="text-center text-sm text-primary-600 hover:underline dark:text-primary-400">
         Voltar para login
       </RouterLink>
     </form>

@@ -77,13 +77,13 @@ function changePage(target: number) {
 
 <template>
   <div class="flex flex-col gap-4">
-    <nav class="text-sm text-gray-500">
+    <nav class="text-sm text-gray-500 dark:text-gray-400">
       <RouterLink to="/buildings" class="hover:underline">Prédios</RouterLink>
       <span> / {{ buildingName || '...' }} / Salas</span>
     </nav>
 
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-gray-800">Salas</h1>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Salas</h1>
       <AppButton v-if="auth.isUser" @click="router.push(`/buildings/${buildingId}/rooms/new`)">Nova sala</AppButton>
     </div>
 

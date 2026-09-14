@@ -94,18 +94,18 @@ async function confirmDeactivate() {
 </script>
 
 <template>
-  <div v-if="loadingPage" class="flex justify-center py-16 text-gray-400">
+  <div v-if="loadingPage" class="flex justify-center py-16 text-gray-400 dark:text-gray-500">
     <AppSpinner size="lg" />
   </div>
 
   <div v-else-if="building" class="mx-auto flex max-w-lg flex-col gap-4">
-    <nav class="text-sm text-gray-500">
+    <nav class="text-sm text-gray-500 dark:text-gray-400">
       <RouterLink to="/buildings" class="hover:underline">Prédios</RouterLink>
       <span> / {{ building.name }}</span>
     </nav>
 
     <div class="flex items-center gap-3">
-      <h1 class="text-2xl font-bold text-gray-800">{{ building.name }}</h1>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ building.name }}</h1>
       <AppBadge :variant="building.active ? 'success' : 'neutral'" :label="building.active ? 'Ativo' : 'Inativo'" />
     </div>
 
@@ -113,7 +113,7 @@ async function confirmDeactivate() {
       <AppButton variant="secondary" size="sm" @click="router.push(`/buildings/${id}/rooms`)">Ver salas</AppButton>
     </div>
 
-    <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+    <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <BuildingForm
         ref="formRef"
         :initial-values="initialValues"
@@ -122,12 +122,12 @@ async function confirmDeactivate() {
         submit-label="Salvar alterações"
         @submit="onSubmit"
       />
-      <p v-if="!canEdit" class="mt-2 text-sm text-gray-500">Você tem acesso somente leitura a este prédio.</p>
+      <p v-if="!canEdit" class="mt-2 text-sm text-gray-500 dark:text-gray-400">Você tem acesso somente leitura a este prédio.</p>
     </div>
 
-    <div v-if="canEdit && building.active" class="rounded-xl border border-red-100 bg-red-50 p-6">
-      <h2 class="text-sm font-semibold text-red-800">Zona de perigo</h2>
-      <p class="mt-1 text-sm text-red-700">Desativar o prédio o torna indisponível para novas salas e alocações.</p>
+    <div v-if="canEdit && building.active" class="rounded-xl border border-red-100 bg-red-50 p-6 dark:border-red-900/50 dark:bg-red-950/30">
+      <h2 class="text-sm font-semibold text-red-800 dark:text-red-300">Zona de perigo</h2>
+      <p class="mt-1 text-sm text-red-700 dark:text-red-400">Desativar o prédio o torna indisponível para novas salas e alocações.</p>
       <AppButton variant="danger" size="sm" class="mt-3" @click="confirmOpen = true">Desativar prédio</AppButton>
     </div>
 

@@ -81,13 +81,13 @@ const onSubmit = handleSubmit(async (values) => {
         :error="errors.password"
         required
       />
-      <p v-if="formError" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+      <p v-if="formError" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
         {{ formError }}
       </p>
       <AppButton type="submit" :loading="loading" class="w-full">Entrar</AppButton>
       <RouterLink
         to="/forgot-password"
-        class="text-center text-sm text-primary-600 hover:underline"
+        class="text-center text-sm text-primary-600 hover:underline dark:text-primary-400"
       >
         Esqueci minha senha
       </RouterLink>

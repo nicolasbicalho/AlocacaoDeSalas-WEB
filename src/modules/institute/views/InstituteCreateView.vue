@@ -40,13 +40,13 @@ async function onSubmit(values: { name: string; code: string }) {
 
 <template>
   <div class="mx-auto flex max-w-lg flex-col gap-4">
-    <nav class="text-sm text-gray-500">
+    <nav class="text-sm text-gray-500 dark:text-gray-400">
       <RouterLink to="/institutes" class="hover:underline">Institutos</RouterLink>
       <span> / Novo instituto</span>
     </nav>
-    <h1 class="text-2xl font-bold text-gray-800">Novo instituto</h1>
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Novo instituto</h1>
 
-    <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+    <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <InstituteForm ref="formRef" :loading="loading" submit-label="Salvar" @submit="onSubmit">
         <template #actions>
           <AppButton

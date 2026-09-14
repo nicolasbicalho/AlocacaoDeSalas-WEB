@@ -105,22 +105,22 @@ async function onCloseProject() {
 </script>
 
 <template>
-  <div v-if="loadingPage" class="flex justify-center py-16 text-gray-400">
+  <div v-if="loadingPage" class="flex justify-center py-16 text-gray-400 dark:text-gray-500">
     <AppSpinner size="lg" />
   </div>
 
   <div v-else-if="project" class="mx-auto flex max-w-lg flex-col gap-4">
-    <nav class="text-sm text-gray-500">
+    <nav class="text-sm text-gray-500 dark:text-gray-400">
       <RouterLink to="/projects" class="hover:underline">Projetos</RouterLink>
       <span> / {{ project.name }}</span>
     </nav>
 
     <div class="flex items-center gap-3">
-      <h1 class="text-2xl font-bold text-gray-800">{{ project.name }}</h1>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ project.name }}</h1>
       <ProjectStatusBadge :status="project.status" />
     </div>
 
-    <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+    <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <ProjectForm
         ref="formRef"
         :initial-values="initialValues"
@@ -129,7 +129,7 @@ async function onCloseProject() {
         submit-label="Salvar alterações"
         @submit="onSubmit"
       />
-      <p v-if="!auth.isUser" class="mt-2 text-sm text-gray-500">
+      <p v-if="!auth.isUser" class="mt-2 text-sm text-gray-500 dark:text-gray-400">
         Você tem acesso somente leitura a este projeto.
       </p>
     </div>
