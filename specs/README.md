@@ -20,7 +20,7 @@ Este diretório contém todas as especificações do projeto frontend seguindo o
 |---|--------|---------|--------|
 | 1 | Autenticação e Autorização | [01-auth.md](./modules/01-auth.md) | `implemented` |
 | 2 | Gerenciamento de Institutos | [02-institutes.md](./modules/02-institutes.md) | `implemented` |
-| 3 | Gerenciamento de Projetos | [03-projects.md](./modules/03-projects.md) | `draft` |
+| 3 | Gerenciamento de Projetos | [03-projects.md](./modules/03-projects.md) | `implemented` |
 <!-- | 4 | Cadastro de Dados Base (Uploads) | [04-data-upload.md](./modules/04-data-upload.md) | `draft` |
 | 5 | Alocação Automática | [05-auto-allocation.md](./modules/05-auto-allocation.md) | `draft` |
 | 6 | Alocação Manual e Ajustes | [06-manual-allocation.md](./modules/06-manual-allocation.md) | `draft` |

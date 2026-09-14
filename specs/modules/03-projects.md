@@ -1,6 +1,6 @@
 # Módulo 3 — Gerenciamento de Projetos
 
-**Status:** `approved`
+**Status:** `implemented`
 **Depende de:** Módulo 1 (Auth), Módulo 2 (Institutes)
 **API correspondente:** [`AlocacaoDeSalas-API/specs/modules/03-projects.md`](../../../AlocacaoDeSalas-API/specs/modules/03-projects.md)
 
@@ -157,9 +157,9 @@ PATCH /projects/:id/close
 
 ## Critérios de Aceitação
 
-- [ ] `user` vê apenas projetos do seu instituto
-- [ ] Admin vê todos os projetos
-- [ ] `admin` visualiza projetos mas não cria nem ativa
-- [ ] Projeto criado começa com status `draft`
-- [ ] Projeto ativado exibe badge "Ativo"
-- [ ] Projeto encerrado não pode mais ser editado
+- [x] `user` vê apenas projetos do seu instituto
+- [x] Admin vê todos os projetos
+- [x] `admin` visualiza projetos mas não cria nem ativa
+- [x] Projeto criado começa com status `draft`
+- [x] Projeto ativado exibe badge "Ativo"
+- [x] Projeto encerrado não pode mais ser editado
