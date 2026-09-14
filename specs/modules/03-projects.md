@@ -1,6 +1,6 @@
 # Módulo 3 — Gerenciamento de Projetos
 
-**Status:** `draft`
+**Status:** `approved`
 **Depende de:** Módulo 1 (Auth), Módulo 2 (Institutes)
 **API correspondente:** [`AlocacaoDeSalas-API/specs/modules/03-projects.md`](../../../AlocacaoDeSalas-API/specs/modules/03-projects.md)
 
@@ -10,7 +10,7 @@
 
 Um **Projeto** representa um ciclo de alocação correspondente a um semestre ou período letivo. É o ponto central da aplicação — todos os dados importados (prédios, salas, turmas) e as alocações geradas pertencem a um projeto específico.
 
-O coordinator cria e opera projetos. O professor e o admin visualizam. Apenas um projeto pode estar com status `active` por instituto.
+O `user` cria e opera projetos. O `admin` visualiza (leitura). Apenas um projeto pode estar com status `active` por instituto.
 
 ---
 
@@ -57,9 +57,9 @@ interface IProject {
 
 | Path | View | Roles |
 |------|------|-------|
-| `/projects` | `ProjectListView` | `admin`, `coordinator`, `professor` |
-| `/projects/new` | `ProjectCreateView` | `coordinator` |
-| `/projects/:id` | `ProjectDetailView` | `admin`, `coordinator`, `professor` |
+| `/projects` | `ProjectListView` | `admin`, `user` |
+| `/projects/new` | `ProjectCreateView` | `user` |
+| `/projects/:id` | `ProjectDetailView` | `admin`, `user` |
 
 ---
 
@@ -67,7 +67,7 @@ interface IProject {
 
 ### Layout
 
-- Título "Projetos" com botão "Novo projeto" no canto direito (visível para `coordinator`)
+- Título "Projetos" com botão "Novo projeto" no canto direito (visível para `user`)
 - Filtro de status: todos | rascunho | ativo | encerrado
 - Cards de projeto (`ProjectCard`) em grid
 - Estado vazio com `AppEmptyState`
@@ -79,7 +79,7 @@ Exibe: nome do projeto, semestre, status (`ProjectStatusBadge`), data de criaç�
 ### Comportamento
 
 1. Ao montar, busca projetos via `GET /projects`
-2. Coordinator vê apenas projetos do seu instituto
+2. `user` vê apenas projetos do seu instituto
 3. Admin vê todos os projetos
 4. Filtro de status não recarrega a página — filtra localmente se lista for pequena, ou via query param se paginado
 5. "Abrir" navega para `/projects/:id`
@@ -133,10 +133,10 @@ Body: { name, semester }
 
 | Ação | Status requerido | Role |
 |------|-----------------|------|
-| Ativar projeto | `draft` | `coordinator` |
-| Encerrar projeto | `active` | `coordinator` |
-| Importar dados | `draft` ou `active` | `coordinator` |
-| Executar alocação | `active` | `coordinator` |
+| Ativar projeto | `draft` | `user` |
+| Encerrar projeto | `active` | `user` |
+| Importar dados | `draft` ou `active` | `user` |
+| Executar alocação | `active` | `user` |
 | Ver relatórios | qualquer | todos |
 
 ### Comportamento
@@ -157,9 +157,9 @@ PATCH /projects/:id/close
 
 ## Critérios de Aceitação
 
-- [ ] Coordinator vê apenas projetos do seu instituto
+- [ ] `user` vê apenas projetos do seu instituto
 - [ ] Admin vê todos os projetos
-- [ ] Professor visualiza projetos mas não pode criar ou ativar
+- [ ] `admin` visualiza projetos mas não cria nem ativa
 - [ ] Projeto criado começa com status `draft`
 - [ ] Projeto ativado exibe badge "Ativo"
 - [ ] Projeto encerrado não pode mais ser editado

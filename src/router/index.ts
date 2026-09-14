@@ -3,6 +3,7 @@ import type { RouteRecordRaw } from 'vue-router'
 import { authRoutes } from '@/modules/auth'
 import { dashboardRoutes } from '@/modules/dashboard'
 import { instituteRoutes } from '@/modules/institute'
+import { projectRoutes } from '@/modules/project'
 import { useAuthStore } from '@/stores/auth'
 
 declare module 'vue-router' {
@@ -18,6 +19,7 @@ const routes: RouteRecordRaw[] = [
   ...authRoutes,
   ...dashboardRoutes,
   ...instituteRoutes,
+  ...projectRoutes,
   { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
 ]
 

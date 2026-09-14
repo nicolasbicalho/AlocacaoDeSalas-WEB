@@ -44,6 +44,13 @@ async function handleLogout() {
           >
             Institutos
           </RouterLink>
+          <RouterLink
+            to="/projects"
+            class="text-gray-600 transition hover:text-primary-700"
+            active-class="font-medium text-primary-700"
+          >
+            Projetos
+          </RouterLink>
         </nav>
       </div>
       <div class="flex items-center gap-4">
