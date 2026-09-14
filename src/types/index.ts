@@ -35,17 +35,21 @@ export interface IBuilding {
   updatedAt: string
 }
 
-export type RoomType = 'classroom' | 'laboratory' | 'auditorium' | 'other'
+export type RoomAttributeValue = string | number | boolean
+
+export interface RoomAttribute {
+  key: string
+  value: RoomAttributeValue
+}
 
 export interface IRoom {
   id: string
   name: string
   code: string
   buildingId: string
+  instituteId: string
   capacity: number
-  type: RoomType
-  floor: number
-  resources: string[]
+  attributes: RoomAttribute[]
   active: boolean
   createdAt: string
   updatedAt: string
