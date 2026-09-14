@@ -14,6 +14,6 @@ export const instituteRoutes: RouteRecordRaw[] = [
   {
     path: '/institutes/:id',
     component: () => import('./views/InstituteDetailView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'coordinator'], layout: 'AppLayout' },
+    meta: { requiresAuth: true, roles: ['admin', 'user'], layout: 'AppLayout' },
   },
 ]

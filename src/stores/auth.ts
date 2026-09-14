@@ -8,8 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!accessToken.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
-  const isCoordinator = computed(() => user.value?.role === 'coordinator')
-  const isProfessor = computed(() => user.value?.role === 'professor')
+  const isUser = computed(() => user.value?.role === 'user')
 
   function setAuth(payload: { user: AuthUser; accessToken: string; refreshToken: string }) {
     user.value = payload.user
@@ -41,8 +40,7 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken,
     isAuthenticated,
     isAdmin,
-    isCoordinator,
-    isProfessor,
+    isUser,
     setAuth,
     setUser,
     clear,

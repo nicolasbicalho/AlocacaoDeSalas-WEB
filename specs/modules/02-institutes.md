@@ -36,7 +36,7 @@ modules/institute/
 |------|------|-------|
 | `/institutes` | `InstituteListView` | `admin` |
 | `/institutes/new` | `InstituteCreateView` | `admin` |
-| `/institutes/:id` | `InstituteDetailView` | `admin`, `coordinator` |
+| `/institutes/:id` | `InstituteDetailView` | `admin`, `user` |
 
 ---
 
@@ -115,7 +115,7 @@ Body: { name, code }
 - Seção de informações com `InstituteForm` em modo edição
 - Botão "Salvar alterações" (apenas `admin`)
 - Seção de perigo: botão "Desativar instituto" (apenas `admin`, visível somente se `active: true`)
-- Coordinator vê apenas dados em somente leitura
+- Usuário `user` vê apenas dados em somente leitura
 
 ### Comportamento
 
@@ -123,7 +123,7 @@ Body: { name, code }
 2. Admin pode editar nome e código — validações iguais à criação
 3. Salvar: chama `PUT /institutes/:id`, exibe toast de sucesso
 4. Desativar: abre `AppConfirmDialog` com variante `danger`; ao confirmar, chama `PATCH /institutes/:id/deactivate`; após sucesso, exibe toast "Instituto desativado" e redireciona para `/institutes`
-5. Coordinator: vê dados em modo somente leitura, sem botões de edição
+5. Usuário `user`: vê dados em modo somente leitura, sem botões de edição
 
 ### Chamadas à API
 
@@ -142,6 +142,6 @@ PATCH /institutes/:id/deactivate
 - [x] Código duplicado exibe erro inline no campo correto
 - [x] Listagem exibe paginação corretamente
 - [x] Busca textual com debounce filtra a listagem
-- [x] Coordinator vê a view de detalhe em somente leitura
+- [x] Usuário `user` vê a view de detalhe em somente leitura
 - [x] Desativação abre diálogo de confirmação antes de executar
 - [x] Instituto desativado exibe badge "Inativo" na listagem

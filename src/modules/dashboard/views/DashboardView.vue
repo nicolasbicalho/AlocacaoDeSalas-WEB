@@ -5,8 +5,7 @@ const auth = useAuthStore()
 
 const roleLabels: Record<string, string> = {
   admin: 'Administrador',
-  coordinator: 'Coordenador',
-  professor: 'Professor',
+  user: 'Gerente',
 }
 </script>
 

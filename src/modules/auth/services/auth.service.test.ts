@@ -14,7 +14,7 @@ describe('auth.service', () => {
       const payload = {
         accessToken: 'access-abc',
         refreshToken: 'refresh-xyz',
-        user: { id: '1', name: 'Ana', email: 'ana@x.com', role: 'professor' as const },
+        user: { id: '1', name: 'Ana', email: 'ana@x.com', role: 'user' as const },
       }
       vi.mocked(api.post).mockResolvedValue({ data: { success: true, data: payload } })
 

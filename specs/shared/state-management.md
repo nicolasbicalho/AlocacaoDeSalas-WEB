@@ -79,8 +79,7 @@ export const useAuthStore = defineStore('auth', () => {
 |--------|------|-----------|
 | `isAuthenticated` | `boolean` | `true` se há token |
 | `isAdmin` | `boolean` | `true` se role === 'admin' |
-| `isCoordinator` | `boolean` | `true` se role === 'coordinator' |
-| `isProfessor` | `boolean` | `true` se role === 'professor' |
+| `isUser` | `boolean` | `true` se role === 'user' |
 
 ### Actions
 

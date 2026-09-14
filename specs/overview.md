@@ -4,7 +4,7 @@
 
 ## O que é
 
-AlocacaoDeSalas é um sistema web para gerenciamento de alocação de salas em instituições de ensino. O frontend oferece a interface gráfica completa para que administradores, coordenadores e professores possam operar o sistema: autenticar, gerenciar dados, executar alocações e consultar relatórios.
+AlocacaoDeSalas é um sistema web para gerenciamento de alocação de salas em instituições de ensino. O frontend oferece a interface gráfica completa para que administradores e gerentes de instituto possam operar o sistema: autenticar, gerenciar dados, executar alocações e consultar relatórios.
 
 ## Problema que Resolve
 
@@ -15,8 +15,7 @@ O processo manual de alocação de salas é propenso a conflitos, subutilizaçã
 | Role | Acesso |
 |------|--------|
 | `admin` | Gerenciamento de usuários, institutos e toda a plataforma |
-| `coordinator` | Criação de projetos, importação de dados, execução e ajuste de alocações, relatórios |
-| `professor` | Visualização de alocações e relatórios — somente leitura |
+| `user` | Gerente de instituto — criação de projetos, importação de dados, execução e ajuste de alocações, relatórios |
 
 Cada rota do frontend verifica o role do usuário autenticado. Tentativa de acesso a rota não permitida redireciona para a tela de início correspondente ao role.
 
@@ -38,12 +37,12 @@ Cada rota do frontend verifica o role do usuário autenticado. Tentativa de aces
 ```
 1. Usuário acessa /login → autentica com e-mail e senha
 2. Admin cria institutos em /institutes
-3. Admin cria usuários (coordinators, professors) em /users
-4. Coordinator acessa /projects → cria um projeto (ex: "2025/2")
-5. Coordinator acessa /projects/:id/upload → importa prédios, salas e turmas
-6. Coordinator acessa /projects/:id/allocation → executa alocação automática
-7. Coordinator revisa em /projects/:id/allocation → aplica ajustes manuais
-8. Professor e coordinator consultam /projects/:id/reports
+3. Admin cria usuários em /users
+4. Usuário acessa /projects → cria um projeto (ex: "2025/2")
+5. Usuário acessa /projects/:id/upload → importa prédios, salas e turmas
+6. Usuário acessa /projects/:id/allocation → executa alocação automática
+7. Usuário revisa em /projects/:id/allocation → aplica ajustes manuais
+8. Usuário consulta /projects/:id/reports
 ```
 
 ## Escopo do MVP
@@ -52,11 +51,11 @@ Cada rota do frontend verifica o role do usuário autenticado. Tentativa de aces
 - Tela de login, logout e recuperação de senha
 - Gerenciamento de institutos (admin)
 - Gerenciamento de usuários (admin)
-- Criação e listagem de projetos (coordinator)
-- Upload de dados base via arquivo (coordinator)
-- Visualização e execução de alocação automática (coordinator)
-- Ajustes manuais pós-alocação (coordinator)
-- Relatórios de ocupação e exportação (coordinator + professor)
+- Criação e listagem de projetos (user)
+- Upload de dados base via arquivo (user)
+- Visualização e execução de alocação automática (user)
+- Ajustes manuais pós-alocação (user)
+- Relatórios de ocupação e exportação (user)
 
 ### Fora do escopo (versão atual)
 - Notificações em tempo real (WebSocket)

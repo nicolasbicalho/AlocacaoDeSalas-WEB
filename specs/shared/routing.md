@@ -21,14 +21,14 @@
 
 /institutes               → InstituteListView (AppLayout) — roles: admin
 /institutes/new           → InstituteCreateView (AppLayout) — roles: admin
-/institutes/:id           → InstituteDetailView (AppLayout) — roles: admin, coordinator
+/institutes/:id           → InstituteDetailView (AppLayout) — roles: admin, user
 
-/projects                 → ProjectListView (AppLayout) — roles: admin, coordinator, professor
-/projects/new             → ProjectCreateView (AppLayout) — roles: coordinator
-/projects/:id             → ProjectDetailView (AppLayout) — roles: admin, coordinator, professor
-/projects/:id/upload      → DataUploadView (AppLayout) — roles: coordinator
-/projects/:id/allocation  → AllocationView (AppLayout) — roles: coordinator, professor
-/projects/:id/reports     → ReportView (AppLayout) — roles: coordinator, professor
+/projects                 → ProjectListView (AppLayout) — roles: admin, user
+/projects/new             → ProjectCreateView (AppLayout) — roles: user
+/projects/:id             → ProjectDetailView (AppLayout) — roles: admin, user
+/projects/:id/upload      → DataUploadView (AppLayout) — roles: user
+/projects/:id/allocation  → AllocationView (AppLayout) — roles: user
+/projects/:id/reports     → ReportView (AppLayout) — roles: user
 ```
 
 ---
@@ -55,7 +55,7 @@ export const instituteRoutes: RouteRecordRaw[] = [
   {
     path: '/institutes/:id',
     component: () => import('./views/InstituteDetailView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'coordinator'] },
+    meta: { requiresAuth: true, roles: ['admin', 'user'] },
   },
 ]
 ```
@@ -85,7 +85,7 @@ const router = createRouter({
 declare module 'vue-router' {
   interface RouteMeta {
     requiresAuth: boolean
-    roles?: ('admin' | 'coordinator' | 'professor')[]
+    roles?: ('admin' | 'user')[]
     layout?: 'AppLayout' | 'AuthLayout'
   }
 }
@@ -106,8 +106,7 @@ Executado após `authGuard`. Se `meta.roles` está definido e o role do usuário
 | Role | Home |
 |------|------|
 | `admin` | `/dashboard` |
-| `coordinator` | `/dashboard` |
-| `professor` | `/dashboard` |
+| `user` | `/dashboard` |
 
 > Por ora todos os roles convergem para `/dashboard`. Conforme os módulos (users, projects, ...) forem implementados, os destinos podem ser especializados por role.
 

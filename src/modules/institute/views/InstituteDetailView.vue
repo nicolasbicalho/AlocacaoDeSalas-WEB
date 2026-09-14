@@ -130,7 +130,7 @@ async function confirmDeactivate() {
     <AppConfirmDialog
       :open="confirmOpen"
       title="Desativar instituto"
-      :message="`Tem certeza que deseja desativar '${institute.name}'? Ele deixará de aparecer para coordenadores e professores.`"
+      :message="`Tem certeza que deseja desativar '${institute.name}'? Ele deixará de aparecer para os gerentes do instituto.`"
       confirm-label="Desativar"
       variant="danger"
       :loading="deactivating"

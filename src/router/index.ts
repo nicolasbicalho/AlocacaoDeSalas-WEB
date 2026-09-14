@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/auth'
 declare module 'vue-router' {
   interface RouteMeta {
     requiresAuth: boolean
-    roles?: ('admin' | 'coordinator' | 'professor')[]
+    roles?: ('admin' | 'user')[]
     layout?: 'AppLayout' | 'AuthLayout'
   }
 }
@@ -30,8 +30,7 @@ const router = createRouter({
 // (users, projects, ...) forem implementados, ajustar os destinos.
 const roleHome: Record<string, string> = {
   admin: '/dashboard',
-  coordinator: '/dashboard',
-  professor: '/dashboard',
+  user: '/dashboard',
 }
 
 router.beforeEach((to) => {
@@ -44,7 +43,7 @@ router.beforeEach((to) => {
 
   // usuário autenticado não deve ver a tela de login
   if (!to.meta.requiresAuth && auth.isAuthenticated && to.path === '/login') {
-    return roleHome[auth.user?.role ?? 'professor']
+    return roleHome[auth.user?.role ?? 'user']
   }
 
   // roleGuard: bloqueia rotas fora do escopo do role
