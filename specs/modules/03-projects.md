@@ -2,7 +2,7 @@
 
 **Status:** `draft`
 **Depende de:** Módulo 1 (Auth), Módulo 2 (Institutes)
-**API correspondente:** `AlocacaoDeSalas-API/specs/modules/03-projects.md` (a ser criado)
+**API correspondente:** [`AlocacaoDeSalas-API/specs/modules/03-projects.md`](../../../AlocacaoDeSalas-API/specs/modules/03-projects.md)
 
 ---
 
@@ -110,7 +110,7 @@ GET /projects?status=...&page=1&limit=20
 ### Comportamento
 
 1. Sucesso: redireciona para `/projects/:id` do projeto criado
-2. Erro de duplicidade de semestre: exibe erro inline no campo `semester`
+2. Erro `PROJECT_SEMESTER_EXISTS`: exibe erro inline no campo `semester`
 
 ### Chamada à API
 
