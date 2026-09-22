@@ -23,8 +23,9 @@ Decisões de modelagem (MVP): **semanal implícito** no semestre (sem datas) e *
 ```
 modules/allocation/
 ├── views/
-│   └── AllocationView.vue        # Cronograma do projeto (semanal + dia único + stats)
+│   └── AllocationView.vue        # Cronograma: alterna entre grade (v2) e lista (v1)
 ├── components/
+│   ├── ScheduleGrid.vue          # Grade sala × hora (régua fixa por hora), célula livre clicável
 │   └── AllocationModal.vue       # Adicionar / mover utilização (com detecção de conflito)
 ├── services/
 │   └── allocation.service.ts     # list / create / move / delete
@@ -32,7 +33,10 @@ modules/allocation/
 └── index.ts                      # rotas do módulo
 ```
 
-O cronograma é apresentado como **listas agrupadas** (por dia da semana, no semanal; por data, no dia único), priorizando clareza e CRUD — uma grade matricial `sala × horário` fica como evolução futura.
+Duas visualizações, alternáveis por um toggle (preferência salva em `localStorage`):
+
+- **Grade (v2, padrão):** grade `sala × hora` de um dia por vez (abas Seg–Sáb, com contador de utilizações por dia) e filtro por prédio. **Régua fixa por hora** (janela 07h–19h, expandida conforme os dados): toda hora aparece — célula vazia é clicável para alocar naquele horário, célula ocupada mostra a turma e ocupa N colunas conforme a duração. Salas agrupadas por prédio quando "Todos". As utilizações de **dia único** ficam listadas abaixo da grade.
+- **Lista (v1):** listas agrupadas por dia da semana (semanal) e por data (dia único). Mais simples e melhor em telas estreitas.
 
 ---
 
@@ -76,6 +80,9 @@ DELETE /projects/:projectId/allocations/:id             # remover
 
 ## Critérios de Aceitação
 
+- [x] Duas visualizações: **grade** `sala × hora` (v2) e **lista** (v1), com toggle e preferência salva
+- [x] Grade com abas de dia (Seg–Sáb + contador), filtro por prédio e agrupamento por prédio
+- [x] Célula vazia da grade abre o modal já preenchido (sala + dia + horário)
 - [x] `user` visualiza o cronograma (semanal e dia único) com salas e turmas resolvidas por nome
 - [x] `user` adiciona utilização escolhendo turma, sala e horário livre
 - [x] Suporta utilização de **dia único** (data) além de semanal; domingo é barrado

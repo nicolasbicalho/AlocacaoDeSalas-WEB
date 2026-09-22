@@ -17,6 +17,8 @@ const props = defineProps<{
   rooms: IRoom[]
   /** quando presente, o modal opera em modo "mover" sobre esta utilização */
   editing?: IAllocation | null
+  /** valores iniciais ao criar (ex.: clique numa célula livre da grade) */
+  prefill?: { roomId?: string; day?: WeekDay; start?: string; end?: string } | null
 }>()
 
 const emit = defineEmits<{ saved: [IAllocation]; close: [] }>()
@@ -56,12 +58,13 @@ function resetFromProps() {
     end.value = a.timeSlot.end
     date.value = a.date ?? ''
   } else {
+    const p = props.prefill
     turmaId.value = props.turmas[0]?.id ?? ''
-    roomId.value = props.rooms[0]?.id ?? ''
+    roomId.value = p?.roomId ?? props.rooms[0]?.id ?? ''
     type.value = 'weekly'
-    day.value = 'mon'
-    start.value = '08:00'
-    end.value = '10:00'
+    day.value = p?.day ?? 'mon'
+    start.value = p?.start ?? '08:00'
+    end.value = p?.end ?? '10:00'
     date.value = ''
   }
 }
