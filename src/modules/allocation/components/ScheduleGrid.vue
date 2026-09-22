@@ -161,7 +161,7 @@ function onFree(roomId: string, hour: number) {
                 type="button"
                 class="flex items-center justify-center border-l border-gray-100 text-lg leading-none text-gray-300 transition-colors dark:border-gray-700 dark:text-gray-600"
                 :class="canManage ? 'cursor-pointer hover:bg-primary-50 hover:text-primary-500 dark:hover:bg-primary-950/40 dark:hover:text-primary-400' : 'cursor-default'"
-                :style="{ 'grid-column': `${cell.col} / span 1` }"
+                :style="{ 'grid-column': `${cell.col} / span 1`, 'grid-row': '1' }"
                 :disabled="!canManage"
                 :aria-label="`Alocar às ${pad(cell.hour)}h em ${row.room.name}`"
                 @click="onFree(row.room.id, cell.hour)"
@@ -174,7 +174,7 @@ function onFree(roomId: string, hour: number) {
                 v-else
                 class="group relative flex flex-col justify-center overflow-hidden border-l-4 border-primary-500 bg-primary-100/80 px-2 py-1 dark:bg-primary-900/40"
                 :class="canManage ? 'cursor-pointer hover:bg-primary-200/80 dark:hover:bg-primary-900/60' : ''"
-                :style="{ 'grid-column': `${cell.col} / span ${cell.span}` }"
+                :style="{ 'grid-column': `${cell.col} / span ${cell.span}`, 'grid-row': '1' }"
                 @click="canManage && emit('move', cell.alloc)"
               >
                 <p class="truncate text-xs font-semibold text-primary-900 dark:text-primary-100">
