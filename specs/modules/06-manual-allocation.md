@@ -91,3 +91,8 @@ DELETE /projects/:projectId/allocations/:id             # remover
 - [x] Estatísticas de ocupação e turmas com sala são exibidas
 - [x] `admin` vê o cronograma em somente leitura (sem ações de edição)
 - [x] Dark mode em todos os elementos do módulo
+
+---
+
+## Questões em aberto / Evolução futura
+- **Eventos avulsos sem turma:** no modal, permitir escolher entre "turma" e "evento avulso" (palestra, defesa, reunião), com um título livre, sem exigir uma turma cadastrada. Depende da generalização da utilização na API — ver [API 06](../../AlocacaoDeSalas-API/specs/modules/06-manual-allocation.md).

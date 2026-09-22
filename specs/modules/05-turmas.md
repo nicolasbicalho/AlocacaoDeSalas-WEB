@@ -63,3 +63,8 @@ Lista de chaves (strings) que a sala deve ter. Entrada simples (campo + adiciona
 - [x] `admin` vê em somente leitura
 - [x] Código duplicado no projeto exibe erro inline
 - [x] Turmas são acessadas a partir do projeto (rota aninhada)
+
+---
+
+## Questões em aberto / Evolução futura
+- **Eventos avulsos sem turma:** expandir o conceito de turma para permitir inserir eventos únicos (palestras, defesas, reuniões) no cronograma sem precisar cadastrar uma turma. Ver [Alocação Manual — Questões em aberto](./06-manual-allocation.md).
