@@ -6,6 +6,7 @@ import { instituteRoutes } from '@/modules/institute'
 import { projectRoutes } from '@/modules/project'
 import { buildingRoutes } from '@/modules/building'
 import { roomRoutes } from '@/modules/room'
+import { turmaRoutes } from '@/modules/turma'
 import { useAuthStore } from '@/stores/auth'
 
 declare module 'vue-router' {
@@ -24,6 +25,7 @@ const routes: RouteRecordRaw[] = [
   ...projectRoutes,
   ...buildingRoutes,
   ...roomRoutes,
+  ...turmaRoutes,
   { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
 ]
 

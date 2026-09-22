@@ -120,6 +120,10 @@ async function onCloseProject() {
       <ProjectStatusBadge :status="project.status" />
     </div>
 
+    <div class="flex">
+      <AppButton variant="secondary" size="sm" @click="router.push(`/projects/${id}/turmas`)">Ver turmas</AppButton>
+    </div>
+
     <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <ProjectForm
         ref="formRef"

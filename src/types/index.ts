@@ -67,6 +67,29 @@ export interface IProject {
   updatedAt: string
 }
 
+export type WeekDay = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'
+
+export interface TimeSlot {
+  day: WeekDay
+  start: string
+  end: string
+}
+
+export interface ITurma {
+  id: string
+  projectId: string
+  instituteId: string
+  name: string
+  code?: string
+  studentCount: number
+  professor: string
+  requiredAttributes: string[]
+  schedule: TimeSlot[]
+  active: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 export interface ApiSuccess<T> {
   success: true
   data: T
