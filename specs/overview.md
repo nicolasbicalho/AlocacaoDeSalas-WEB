@@ -23,14 +23,26 @@ Cada rota do frontend verifica o role do usuário autenticado. Tentativa de aces
 
 | Termo | Definição |
 |-------|-----------|
-| **Instituto** | Unidade organizacional gestora; dono dos prédios e agrupa coordenadores |
+| **Instituto** | Unidade organizacional gestora; dono dos prédios e agrupa os usuários (gerentes) |
 | **Projeto** | Ciclo de alocação de um semestre/período letivo |
 | **Prédio** | Estrutura física pertencente a um instituto |
-| **Sala** | Espaço físico dentro de um prédio (tipo, capacidade, recursos) |
+| **Sala** | Espaço físico dentro de um prédio (capacidade, atributos/recursos) |
 | **Turma** | Grupo de alunos em uma disciplina com professor e grade de horários |
-| **Alocação** | Atribuição de turma a sala em horário específico dentro de um projeto |
+| **Alocação** | Ato de atribuir uma turma a uma sala em um horário (manual ou automática) |
+| **Utilização** | Unidade do cronograma: uma turma ocupando uma sala em um horário (semanal ou de dia único) |
+| **Cronograma** | Calendário completo das utilizações de salas de um projeto ao longo do semestre |
 | **Conflito** | Duas turmas na mesma sala no mesmo horário |
 | **Restrição** | Regra que condiciona uma alocação |
+
+## Cronograma / Calendário de Utilizações
+
+A alocação monta um **calendário de utilizações** de salas ao longo de todo o semestre de um projeto. Uma *utilização* é uma turma ocupando uma sala em um horário — podendo se repetir semanalmente ou ocorrer em um único dia.
+
+- O **processamento automático** gera o cronograma completo do projeto, com todas as utilizações do semestre inteiro.
+- O usuário pode **visualizar o cronograma de cada sala** (ocupado × livre).
+- O usuário pode **escolher um horário disponível** em qualquer sala e **adicionar uma utilização manualmente** — mesmo que apenas por um dia.
+
+A alocação **manual** (telas base do cronograma) é entregue antes da **automática**.
 
 ## Fluxo Principal (perspectiva de telas)
 
@@ -39,9 +51,10 @@ Cada rota do frontend verifica o role do usuário autenticado. Tentativa de aces
 2. Admin cria institutos em /institutes
 3. Admin cria usuários em /users
 4. Usuário acessa /projects → cria um projeto (ex: "2025/2")
-5. Usuário acessa /projects/:id/upload → importa prédios, salas e turmas
-6. Usuário acessa /projects/:id/allocation → executa alocação automática
-7. Usuário revisa em /projects/:id/allocation → aplica ajustes manuais
+5. Usuário cadastra prédios, salas e turmas do projeto
+6. Usuário acessa /projects/:id/allocation → monta o cronograma manualmente
+   (adiciona utilizações em horários disponíveis)
+7. Usuário executa a alocação automática na mesma tela → cronograma completo do semestre
 8. Usuário consulta /projects/:id/reports
 ```
 
@@ -52,9 +65,9 @@ Cada rota do frontend verifica o role do usuário autenticado. Tentativa de aces
 - Gerenciamento de institutos (admin)
 - Gerenciamento de usuários (admin)
 - Criação e listagem de projetos (user)
-- Upload de dados base via arquivo (user)
+- Cadastro de prédios, salas e turmas (user)
+- Cronograma e adição manual de utilizações — semanais ou de dia único (user)
 - Visualização e execução de alocação automática (user)
-- Ajustes manuais pós-alocação (user)
 - Relatórios de ocupação e exportação (user)
 - Tema claro/escuro (dark mode) com preferência salva
 
