@@ -47,6 +47,7 @@ const nHours = computed(() => hours.value.length)
 const gridStyle = computed(() => ({
   'grid-template-columns': `repeat(${nHours.value}, minmax(72px, 1fr))`,
   'min-width': `${nHours.value * 72}px`,
+  'grid-auto-rows': '1fr',
 }))
 
 const buildingById = computed(() => new Map(props.buildings.map((b) => [b.id, b])))
@@ -145,7 +146,7 @@ function onFree(roomId: string, hour: number) {
         <div
           v-for="row in g.rows"
           :key="row.room.id"
-          class="flex border-b border-gray-100 last:border-b-0 dark:border-gray-700"
+          class="flex min-h-[3.5rem] border-b border-gray-100 last:border-b-0 dark:border-gray-700"
         >
           <div class="flex w-40 shrink-0 flex-col justify-center px-3 py-2">
             <span class="truncate text-sm font-medium text-gray-800 dark:text-gray-100">{{ row.room.name }}</span>
@@ -158,8 +159,8 @@ function onFree(roomId: string, hour: number) {
               <button
                 v-if="cell.kind === 'free'"
                 type="button"
-                class="group m-0.5 rounded border border-dashed border-transparent text-center text-[10px] text-transparent transition-colors"
-                :class="canManage ? 'hover:border-primary-300 hover:bg-primary-50 hover:text-primary-500 dark:hover:border-primary-700 dark:hover:bg-primary-950/40 dark:hover:text-primary-400' : 'cursor-default'"
+                class="flex items-center justify-center border-l border-gray-100 text-lg leading-none text-gray-300 transition-colors dark:border-gray-700 dark:text-gray-600"
+                :class="canManage ? 'cursor-pointer hover:bg-primary-50 hover:text-primary-500 dark:hover:bg-primary-950/40 dark:hover:text-primary-400' : 'cursor-default'"
                 :style="{ 'grid-column': `${cell.col} / span 1` }"
                 :disabled="!canManage"
                 :aria-label="`Alocar às ${pad(cell.hour)}h em ${row.room.name}`"
@@ -171,22 +172,22 @@ function onFree(roomId: string, hour: number) {
               <!-- célula ocupada -->
               <div
                 v-else
-                class="group relative m-0.5 overflow-hidden rounded border border-primary-200 bg-primary-50 px-1.5 py-1 dark:border-primary-800 dark:bg-primary-950/40"
-                :class="canManage ? 'cursor-pointer' : ''"
+                class="group relative flex flex-col justify-center overflow-hidden border-l-4 border-primary-500 bg-primary-100/80 px-2 py-1 dark:bg-primary-900/40"
+                :class="canManage ? 'cursor-pointer hover:bg-primary-200/80 dark:hover:bg-primary-900/60' : ''"
                 :style="{ 'grid-column': `${cell.col} / span ${cell.span}` }"
                 @click="canManage && emit('move', cell.alloc)"
               >
-                <p class="truncate text-xs font-medium text-primary-800 dark:text-primary-200">
+                <p class="truncate text-xs font-semibold text-primary-900 dark:text-primary-100">
                   {{ turmaLabel(cell.alloc.turmaId) }}
                 </p>
-                <p class="truncate text-[10px] text-primary-600/80 dark:text-primary-300/70">
+                <p class="truncate text-[10px] text-primary-700/90 dark:text-primary-300/80">
                   {{ cell.alloc.timeSlot.start }}–{{ cell.alloc.timeSlot.end }}
                   <template v-if="turmaProf(cell.alloc.turmaId)"> · {{ turmaProf(cell.alloc.turmaId) }}</template>
                 </p>
                 <button
                   v-if="canManage"
                   type="button"
-                  class="absolute right-0.5 top-0.5 hidden rounded px-1 text-xs text-primary-400 hover:text-red-600 group-hover:block dark:hover:text-red-400"
+                  class="absolute right-0.5 top-0.5 hidden rounded bg-white/70 px-1 text-xs text-primary-500 hover:text-red-600 group-hover:block dark:bg-gray-900/70 dark:hover:text-red-400"
                   aria-label="Remover utilização"
                   @click.stop="emit('remove', cell.alloc)"
                 >
