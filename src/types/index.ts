@@ -90,6 +90,21 @@ export interface ITurma {
   updatedAt: string
 }
 
+export type AllocationType = 'weekly' | 'single'
+
+export interface IAllocation {
+  id: string
+  projectId: string
+  instituteId: string
+  turmaId: string
+  roomId: string
+  timeSlot: TimeSlot
+  type: AllocationType
+  date?: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface ApiSuccess<T> {
   success: true
   data: T

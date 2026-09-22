@@ -120,8 +120,9 @@ async function onCloseProject() {
       <ProjectStatusBadge :status="project.status" />
     </div>
 
-    <div class="flex">
+    <div class="flex flex-wrap gap-2">
       <AppButton variant="secondary" size="sm" @click="router.push(`/projects/${id}/turmas`)">Ver turmas</AppButton>
+      <AppButton variant="secondary" size="sm" @click="router.push(`/projects/${id}/allocation`)">Ver cronograma</AppButton>
     </div>
 
     <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">

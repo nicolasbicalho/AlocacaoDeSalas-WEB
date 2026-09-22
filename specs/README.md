@@ -23,8 +23,8 @@ Este diretório contém todas as especificações do projeto frontend seguindo o
 | 3 | Gerenciamento de Projetos | [03-projects.md](./modules/03-projects.md) | `implemented` |
 | 4 | Estrutura Física (Prédios e Salas) | [04-physical-structure.md](./modules/04-physical-structure.md) | `implemented` |
 | 5 | Gerenciamento de Turmas | [05-turmas.md](./modules/05-turmas.md) | `implemented` |
-<!-- | 6 | Alocação Manual e Cronograma | [06-manual-allocation.md](./modules/06-manual-allocation.md) | `draft` |
-| 7 | Alocação Automática | [07-auto-allocation.md](./modules/07-auto-allocation.md) | `draft` |
+| 6 | Alocação Manual e Cronograma | [06-manual-allocation.md](./modules/06-manual-allocation.md) | `implemented` |
+<!-- | 7 | Alocação Automática | [07-auto-allocation.md](./modules/07-auto-allocation.md) | `draft` |
 | 8 | Relatórios e Exportação | [08-reports.md](./modules/08-reports.md) | `draft` | -->
 
 ## Status Possíveis
