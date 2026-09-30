@@ -6,15 +6,15 @@ import { z } from 'zod'
 import AppInput from '@/shared/components/AppInput.vue'
 import AppButton from '@/shared/components/AppButton.vue'
 import ScheduleEditor from './ScheduleEditor.vue'
-import RequiredAttributesEditor from './RequiredAttributesEditor.vue'
-import type { TimeSlot } from '@/types'
+import FeatureCheckboxes from '@/shared/components/FeatureCheckboxes.vue'
+import type { RoomFeature, TimeSlot } from '@/types'
 
 interface TurmaValues {
   name: string
   code?: string
   studentCount: number
   professor: string
-  requiredAttributes: string[]
+  requiredFeatures: RoomFeature[]
   schedule: TimeSlot[]
 }
 
@@ -54,8 +54,8 @@ const studentCount = ref(
   props.initialValues?.studentCount != null ? String(props.initialValues.studentCount) : '',
 )
 const studentCountError = ref('')
-const requiredAttributes = ref<string[]>(
-  props.initialValues?.requiredAttributes ? [...props.initialValues.requiredAttributes] : [],
+const requiredFeatures = ref<RoomFeature[]>(
+  props.initialValues?.requiredFeatures ? [...props.initialValues.requiredFeatures] : [],
 )
 const schedule = ref<TimeSlot[]>(
   props.initialValues?.schedule ? props.initialValues.schedule.map((s) => ({ ...s })) : [],
@@ -67,7 +67,7 @@ watch(
     if (v) {
       resetForm({ values: { name: v.name, code: v.code ?? '', professor: v.professor } })
       studentCount.value = v.studentCount != null ? String(v.studentCount) : ''
-      requiredAttributes.value = [...v.requiredAttributes]
+      requiredFeatures.value = [...v.requiredFeatures]
       schedule.value = v.schedule.map((s) => ({ ...s }))
     }
   },
@@ -85,7 +85,7 @@ const onSubmit = handleSubmit((values) => {
     code: values.code?.trim() ? values.code.trim() : undefined,
     professor: values.professor,
     studentCount: count,
-    requiredAttributes: requiredAttributes.value,
+    requiredFeatures: requiredFeatures.value,
     schedule: schedule.value,
   })
 })
@@ -131,7 +131,12 @@ defineExpose({
       :disabled="readonly || loading"
       required
     />
-    <RequiredAttributesEditor v-model="requiredAttributes" :readonly="readonly || loading" />
+    <FeatureCheckboxes
+      v-model="requiredFeatures"
+      label="Requisitos de sala"
+      hint="Marque o que a sala precisa ter para receber esta turma."
+      :readonly="readonly || loading"
+    />
     <ScheduleEditor v-model="schedule" :readonly="readonly || loading" />
     <div v-if="!readonly" class="flex justify-end gap-3">
       <slot name="actions" />

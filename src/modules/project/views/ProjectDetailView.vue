@@ -12,7 +12,9 @@ import {
   updateProject,
   activateProject,
   closeProject,
+  type ProjectPayload,
 } from '../services/project.service'
+import { formatDateBR } from '@/modules/allocation/helpers'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import type { IProject } from '@/types'
@@ -31,8 +33,15 @@ const confirmClose = ref(false)
 const formRef = ref<InstanceType<typeof ProjectForm> | null>(null)
 
 const canManage = computed(() => auth.isUser && project.value?.status !== 'closed')
-const initialValues = computed(() =>
-  project.value ? { name: project.value.name, semester: project.value.semester } : undefined,
+const initialValues = computed<ProjectPayload | undefined>(() =>
+  project.value
+    ? {
+        name: project.value.name,
+        semester: project.value.semester,
+        startDate: project.value.startDate ?? '',
+        endDate: project.value.endDate ?? '',
+      }
+    : undefined,
 )
 
 onMounted(async () => {
@@ -55,14 +64,22 @@ onMounted(async () => {
   }
 })
 
-async function onSubmit(values: { name: string; semester: string }) {
+async function onSubmit(values: ProjectPayload) {
   saving.value = true
   try {
     project.value = await updateProject(id, values)
     ui.toast({ message: 'Projeto atualizado com sucesso', variant: 'success' })
   } catch (err) {
-    if (isAxiosError(err) && err.response?.data?.error?.code === 'PROJECT_SEMESTER_EXISTS') {
+    const code = isAxiosError(err) ? err.response?.data?.error?.code : undefined
+    if (code === 'PROJECT_SEMESTER_EXISTS') {
       formRef.value?.setServerError('semester', 'Já existe um projeto com este semestre no instituto')
+      return
+    }
+    if (code === 'PROJECT_DATES_CONFLICT') {
+      formRef.value?.setServerError(
+        'endDate',
+        'Há eventos únicos fora deste período. Mova-os no cronograma antes de alterar as datas.',
+      )
       return
     }
     ui.toast({ message: 'Erro ao salvar as alterações.', variant: 'error' })
@@ -119,6 +136,9 @@ async function onCloseProject() {
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ project.name }}</h1>
       <ProjectStatusBadge :status="project.status" />
     </div>
+    <p v-if="project.startDate && project.endDate" class="-mt-2 text-sm text-gray-500 dark:text-gray-400">
+      Semestre de {{ formatDateBR(project.startDate) }} a {{ formatDateBR(project.endDate) }}
+    </p>
 
     <div class="flex flex-wrap gap-2">
       <AppButton variant="secondary" size="sm" @click="router.push(`/projects/${id}/turmas`)">Ver turmas</AppButton>

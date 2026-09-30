@@ -2,6 +2,7 @@
 import ProjectStatusBadge from './ProjectStatusBadge.vue'
 import AppButton from '@/shared/components/AppButton.vue'
 import type { IProject } from '@/types'
+import { formatDateBR } from '@/modules/allocation/helpers'
 
 defineProps<{ project: IProject }>()
 const emit = defineEmits<{ open: [id: string] }>()
@@ -14,6 +15,9 @@ const emit = defineEmits<{ open: [id: string] }>()
       <ProjectStatusBadge :status="project.status" />
     </div>
     <p class="text-sm text-gray-500 dark:text-gray-400">Semestre {{ project.semester }}</p>
+    <p v-if="project.startDate && project.endDate" class="text-xs text-gray-400 dark:text-gray-500">
+      {{ formatDateBR(project.startDate) }} – {{ formatDateBR(project.endDate) }}
+    </p>
     <AppButton variant="ghost" size="sm" class="mt-2 self-start" @click="emit('open', project.id)">
       Abrir
     </AppButton>

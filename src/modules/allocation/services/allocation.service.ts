@@ -1,14 +1,21 @@
 import api from '@/services/api'
-import type { IAllocation, TimeSlot, AllocationType, WeekDay, ApiSuccess } from '@/types'
+import type { IAllocation, TimeSlot, AllocationType, EventColor, WeekDay, ApiSuccess } from '@/types'
 
+/**
+ * Recorrente (`weekly`): `turmaId` obrigatório, sem `date`/`title`/`color`.
+ * Único (`single`): `date` obrigatória; exatamente um entre `turmaId` e `title`; `color` opcional.
+ */
 export interface AllocationCreatePayload {
-  turmaId: string
+  turmaId?: string
+  title?: string
   roomId: string
   timeSlot: TimeSlot
   type: AllocationType
   date?: string
+  color?: EventColor
 }
 
+/** A turma do evento não muda; `title` só vale para evento de texto livre. */
 export type AllocationMovePayload = Omit<AllocationCreatePayload, 'turmaId'>
 
 export async function listAllocations(

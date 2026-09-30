@@ -6,6 +6,7 @@ import ProjectForm from '../components/ProjectForm.vue'
 import AppButton from '@/shared/components/AppButton.vue'
 import { createProject } from '../services/project.service'
 import { useUiStore } from '@/stores/ui'
+import type { ProjectPayload } from '../services/project.service'
 
 const router = useRouter()
 const ui = useUiStore()
@@ -13,7 +14,7 @@ const ui = useUiStore()
 const loading = ref(false)
 const formRef = ref<InstanceType<typeof ProjectForm> | null>(null)
 
-async function onSubmit(values: { name: string; semester: string }) {
+async function onSubmit(values: ProjectPayload) {
   loading.value = true
   try {
     const project = await createProject(values)

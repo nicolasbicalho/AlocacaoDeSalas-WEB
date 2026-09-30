@@ -33,7 +33,7 @@ const initialValues = computed(() =>
         code: turma.value.code,
         studentCount: turma.value.studentCount,
         professor: turma.value.professor,
-        requiredAttributes: turma.value.requiredAttributes,
+        requiredFeatures: turma.value.requiredFeatures,
         schedule: turma.value.schedule,
       }
     : undefined,

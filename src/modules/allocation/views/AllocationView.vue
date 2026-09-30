@@ -1,24 +1,32 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue'
+import { onMounted, onBeforeUnmount, ref, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { isAxiosError } from 'axios'
 import AppButton from '@/shared/components/AppButton.vue'
 import AppSpinner from '@/shared/components/AppSpinner.vue'
-import AppBadge from '@/shared/components/AppBadge.vue'
 import AppEmptyState from '@/shared/components/AppEmptyState.vue'
 import AppConfirmDialog from '@/shared/components/AppConfirmDialog.vue'
 import ProjectStatusBadge from '@/modules/project/components/ProjectStatusBadge.vue'
 import AllocationModal from '../components/AllocationModal.vue'
 import ScheduleGrid from '../components/ScheduleGrid.vue'
+import WeekStrip from '../components/WeekStrip.vue'
 import { listAllocations, deleteAllocation } from '../services/allocation.service'
 import { getProject } from '@/modules/project/services/project.service'
 import { listTurmas } from '@/modules/turma/services/turma.service'
 import { listRooms } from '@/modules/room/services/room.service'
 import { listBuildings } from '@/modules/building/services/building.service'
-import { DAY_OPTIONS, dayLabel, formatDateBR } from '../helpers'
+import {
+  dayLabel,
+  eventClasses,
+  eventsOnDate,
+  firstSchoolDay,
+  formatDateBR,
+  todayISO,
+  weekDates,
+} from '../helpers'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
-import type { IProject, ITurma, IRoom, IBuilding, IAllocation, WeekDay } from '@/types'
+import type { IProject, ITurma, IRoom, IBuilding, IAllocation } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -33,16 +41,22 @@ const buildings = ref<IBuilding[]>([])
 const allocations = ref<IAllocation[]>([])
 const loading = ref(true)
 
-const VIEW_KEY = 'alocacao_cronograma_view'
-const viewMode = ref<'grid' | 'list'>('grid')
-const selectedDay = ref<WeekDay>('mon')
-const selectedBuilding = ref<string>('')
+const selectedDate = ref('')
+const selectedBuilding = ref('')
+const highlightId = ref<string | null>(null)
+let highlightTimer: ReturnType<typeof setTimeout> | undefined
 
 const modalOpen = ref(false)
 const editing = ref<IAllocation | null>(null)
-const prefill = ref<{ roomId?: string; day?: WeekDay; start?: string; end?: string } | null>(null)
+const prefill = ref<{ roomId?: string; date?: string; start?: string; end?: string } | null>(null)
 const confirmTarget = ref<IAllocation | null>(null)
 const deleting = ref(false)
+
+const semester = computed(() =>
+  project.value?.startDate && project.value?.endDate
+    ? { startDate: project.value.startDate, endDate: project.value.endDate }
+    : null,
+)
 
 const canManage = computed(() => auth.isUser && project.value?.status !== 'closed')
 const activeTurmas = computed(() => turmas.value.filter((t) => t.active))
@@ -51,70 +65,59 @@ const activeRooms = computed(() => rooms.value.filter((r) => r.active))
 const turmaById = computed(() => new Map(turmas.value.map((t) => [t.id, t])))
 const roomById = computed(() => new Map(rooms.value.map((r) => [r.id, r])))
 
-const weeklyAll = computed(() => allocations.value.filter((a) => a.type === 'weekly'))
-const weeklyCountByDay = computed(() => {
-  const m: Record<string, number> = {}
-  for (const a of weeklyAll.value) m[a.timeSlot.day] = (m[a.timeSlot.day] ?? 0) + 1
-  return m
-})
-const weeklyForDay = computed(() => weeklyAll.value.filter((a) => a.timeSlot.day === selectedDay.value))
-
 const gridRooms = computed(() =>
-  selectedBuilding.value ? activeRooms.value.filter((r) => r.buildingId === selectedBuilding.value) : activeRooms.value,
+  selectedBuilding.value
+    ? activeRooms.value.filter((r) => r.buildingId === selectedBuilding.value)
+    : activeRooms.value,
 )
 
-// ---- listas (v1) ----
-const weeklyByDay = computed(() =>
-  DAY_OPTIONS.map((d) => ({
-    day: d.value as WeekDay,
-    long: d.long,
-    items: weeklyAll.value
-      .filter((a) => a.timeSlot.day === d.value)
-      .sort((a, b) => a.timeSlot.start.localeCompare(b.timeSlot.start)),
-  })).filter((g) => g.items.length > 0),
+// grade: todos os eventos da data (recorrentes do dia da semana + únicos da data)
+const eventsForDate = computed(() =>
+  semester.value && selectedDate.value
+    ? eventsOnDate(allocations.value, selectedDate.value, semester.value)
+    : [],
 )
 
-const singleByDate = computed(() => {
-  const groups = new Map<string, IAllocation[]>()
-  for (const a of allocations.value.filter((x) => x.type === 'single' && x.date)) {
-    const list = groups.get(a.date!) ?? []
-    list.push(a)
-    groups.set(a.date!, list)
+const countsForWeek = computed(() => {
+  const counts: Record<string, number> = {}
+  if (!semester.value || !selectedDate.value) return counts
+  for (const d of weekDates(selectedDate.value)) {
+    counts[d.date] = eventsOnDate(allocations.value, d.date, semester.value).length
   }
-  return [...groups.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, items]) => ({
-      date,
-      items: items.sort((a, b) => a.timeSlot.start.localeCompare(b.timeSlot.start)),
-    }))
+  return counts
 })
+
+// lista abaixo da grade: só os eventos únicos
+const singles = computed(() =>
+  allocations.value
+    .filter((a) => a.type === 'single' && a.date)
+    .sort((a, b) => (a.date! + a.timeSlot.start).localeCompare(b.date! + b.timeSlot.start)),
+)
 
 const stats = computed(() => ({
-  total: allocations.value.length,
+  weekly: allocations.value.filter((a) => a.type === 'weekly').length,
+  single: singles.value.length,
   rooms: new Set(allocations.value.map((a) => a.roomId)).size,
-  turmas: new Set(allocations.value.map((a) => a.turmaId)).size,
+  turmas: new Set(allocations.value.filter((a) => a.turmaId).map((a) => a.turmaId)).size,
   totalTurmas: activeTurmas.value.length,
 }))
 
-function turmaLabel(id: string): string {
-  const t = turmaById.value.get(id)
-  return t ? `${t.name} — ${t.professor}` : '—'
+function eventTitle(a: IAllocation): string {
+  if (a.turmaId) {
+    const t = turmaById.value.get(a.turmaId)
+    return t ? `${t.name} — ${t.professor}` : '—'
+  }
+  return a.title ?? '—'
 }
 function roomLabel(id: string): string {
   const r = roomById.value.get(id)
   return r ? `${r.name} (${r.code})` : '—'
 }
-function slotLabel(a: IAllocation): string {
-  return `${a.timeSlot.start}–${a.timeSlot.end}`
-}
 
-function setView(mode: 'grid' | 'list') {
-  viewMode.value = mode
-  try {
-    localStorage.setItem(VIEW_KEY, mode)
-  } catch {
-    /* ignore */
-  }
+function initialDate(s: { startDate: string; endDate: string }): string {
+  const today = todayISO()
+  const base = today >= s.startDate && today <= s.endDate ? today : s.startDate
+  return firstSchoolDay(base, s.endDate)
 }
 
 async function fetchAll() {
@@ -132,9 +135,7 @@ async function fetchAll() {
     rooms.value = roomRes.data
     buildings.value = buildingRes.data
     allocations.value = allocs
-    // seleciona o primeiro dia que tem utilizações semanais
-    const firstDay = DAY_OPTIONS.find((d) => weeklyCountByDay.value[d.value])
-    if (firstDay) selectedDay.value = firstDay.value
+    if (semester.value) selectedDate.value = initialDate(semester.value)
   } catch (err) {
     if (isAxiosError(err) && (err.response?.status === 404 || err.response?.status === 403)) {
       ui.toast({ message: 'Projeto não encontrado ou sem acesso.', variant: 'error' })
@@ -147,34 +148,51 @@ async function fetchAll() {
   }
 }
 
-onMounted(() => {
-  try {
-    const saved = localStorage.getItem(VIEW_KEY)
-    if (saved === 'grid' || saved === 'list') viewMode.value = saved
-  } catch {
-    /* ignore */
-  }
-  fetchAll()
-})
+onMounted(fetchAll)
+onBeforeUnmount(() => clearTimeout(highlightTimer))
 
-function openCreate(pf?: { roomId?: string; day?: WeekDay; start?: string; end?: string }) {
+/** Leva a grade até o evento único: seleciona a data, mostra todos os prédios e destaca. */
+async function goToEvent(a: IAllocation) {
+  if (!a.date) return
+  selectedDate.value = a.date
+  selectedBuilding.value = ''
+  highlightId.value = a.id
+  await nextTick()
+  document
+    .getElementById(`event-${a.id}`)
+    ?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
+  clearTimeout(highlightTimer)
+  highlightTimer = setTimeout(() => (highlightId.value = null), 2200)
+}
+
+function openCreate(pf?: { roomId?: string; start?: string; end?: string }) {
   editing.value = null
-  prefill.value = pf ?? null
+  prefill.value = { date: selectedDate.value, ...pf }
   modalOpen.value = true
 }
-function openMove(a: IAllocation) {
+function openEdit(a: IAllocation) {
   editing.value = a
-  prefill.value = null
+  prefill.value = { date: selectedDate.value }
   modalOpen.value = true
 }
+
 function onSaved(saved: IAllocation) {
-  const idx = allocations.value.findIndex((a) => a.id === saved.id)
   const wasEditing = !!editing.value
+  const idx = allocations.value.findIndex((a) => a.id === saved.id)
   if (idx >= 0) allocations.value.splice(idx, 1, saved)
   else allocations.value.push(saved)
-  if (saved.type === 'weekly') selectedDay.value = saved.timeSlot.day
   modalOpen.value = false
-  ui.toast({ message: wasEditing ? 'Utilização movida' : 'Utilização adicionada', variant: 'success' })
+
+  // mantém o evento salvo visível na grade
+  if (saved.type === 'single' && saved.date) {
+    selectedDate.value = saved.date
+  } else if (semester.value) {
+    const sameWeek = weekDates(selectedDate.value).find((d) => d.day === saved.timeSlot.day)
+    if (sameWeek && sameWeek.date >= semester.value.startDate && sameWeek.date <= semester.value.endDate) {
+      selectedDate.value = sameWeek.date
+    }
+  }
+  ui.toast({ message: wasEditing ? 'Evento atualizado' : 'Evento adicionado', variant: 'success' })
 }
 
 async function confirmDelete() {
@@ -183,21 +201,14 @@ async function confirmDelete() {
   try {
     await deleteAllocation(projectId, confirmTarget.value.id)
     allocations.value = allocations.value.filter((a) => a.id !== confirmTarget.value!.id)
-    ui.toast({ message: 'Utilização removida', variant: 'success' })
+    ui.toast({ message: 'Evento removido', variant: 'success' })
     confirmTarget.value = null
   } catch {
-    ui.toast({ message: 'Erro ao remover a utilização.', variant: 'error' })
+    ui.toast({ message: 'Erro ao remover o evento.', variant: 'error' })
   } finally {
     deleting.value = false
   }
 }
-
-// se o prédio filtrado deixar de existir na lista, volta para "todos"
-watch(activeRooms, () => {
-  if (selectedBuilding.value && !buildings.value.some((b) => b.id === selectedBuilding.value)) {
-    selectedBuilding.value = ''
-  }
-})
 </script>
 
 <template>
@@ -208,91 +219,65 @@ watch(activeRooms, () => {
   <div v-else-if="project" class="flex flex-col gap-4">
     <nav class="text-sm text-gray-500 dark:text-gray-400">
       <RouterLink to="/projects" class="hover:underline">Projetos</RouterLink>
-      <span> / {{ project.name }} / Cronograma</span>
+      <span> / </span>
+      <RouterLink :to="`/projects/${project.id}`" class="hover:underline">{{ project.name }}</RouterLink>
+      <span> / Cronograma</span>
     </nav>
 
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Cronograma</h1>
-        <ProjectStatusBadge :status="project.status" />
-      </div>
-      <div class="flex items-center gap-2">
-        <!-- toggle de visualização -->
-        <div class="flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-700">
-          <button
-            type="button"
-            class="rounded-md px-3 py-1 text-sm font-medium transition-colors"
-            :class="viewMode === 'grid' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'"
-            @click="setView('grid')"
-          >
-            Grade
-          </button>
-          <button
-            type="button"
-            class="rounded-md px-3 py-1 text-sm font-medium transition-colors"
-            :class="viewMode === 'list' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'"
-            @click="setView('list')"
-          >
-            Lista
-          </button>
+      <div class="flex flex-col gap-0.5">
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Cronograma</h1>
+          <ProjectStatusBadge :status="project.status" />
         </div>
-        <AppButton v-if="canManage" @click="openCreate()">Adicionar utilização</AppButton>
-      </div>
-    </div>
-
-    <!-- estatísticas -->
-    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      <div class="rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-        <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ stats.total }}</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Utilizações</p>
-      </div>
-      <div class="rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-        <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ stats.rooms }}</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Salas usadas</p>
-      </div>
-      <div class="rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-        <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">
-          {{ stats.turmas }}<span class="text-base font-normal text-gray-400">/{{ stats.totalTurmas }}</span>
+        <p v-if="semester" class="text-sm text-gray-500 dark:text-gray-400">
+          Semestre de {{ formatDateBR(semester.startDate) }} a {{ formatDateBR(semester.endDate) }}
         </p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Turmas com sala</p>
       </div>
-      <div class="rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-        <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ singleByDate.length }}</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Dias com uso único</p>
-      </div>
+      <AppButton v-if="canManage && semester" @click="openCreate()">Adicionar evento</AppButton>
     </div>
 
     <AppEmptyState
-      v-if="allocations.length === 0 && activeRooms.length === 0"
-      title="Cronograma vazio"
-      :description="canManage ? 'Cadastre prédios e salas para montar o cronograma.' : 'Nenhuma utilização cadastrada.'"
-    />
+      v-if="!semester"
+      title="Semestre sem datas"
+      description="Defina a data de início e de término do semestre no projeto para montar o cronograma."
+    >
+      <template #action>
+        <AppButton variant="secondary" @click="router.push(`/projects/${project.id}`)">Abrir projeto</AppButton>
+      </template>
+    </AppEmptyState>
 
-    <!-- ===================== GRADE (v2) ===================== -->
-    <template v-else-if="viewMode === 'grid'">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <!-- abas de dia -->
-        <div class="flex flex-wrap gap-1">
-          <button
-            v-for="d in DAY_OPTIONS"
-            :key="d.value"
-            type="button"
-            class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors"
-            :class="selectedDay === d.value ? 'bg-primary-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'"
-            @click="selectedDay = d.value"
-          >
-            {{ d.label }}
-            <span
-              v-if="weeklyCountByDay[d.value]"
-              class="rounded-full px-1.5 text-xs"
-              :class="selectedDay === d.value ? 'bg-white/25' : 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-200'"
-            >
-              {{ weeklyCountByDay[d.value] }}
-            </span>
-          </button>
+    <template v-else>
+      <!-- estatísticas -->
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+          <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ stats.weekly }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Eventos recorrentes</p>
         </div>
+        <div class="rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+          <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ stats.single }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Eventos únicos</p>
+        </div>
+        <div class="rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+          <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ stats.rooms }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Salas usadas</p>
+        </div>
+        <div class="rounded-xl border border-gray-100 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+          <p class="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            {{ stats.turmas }}<span class="text-base font-normal text-gray-400">/{{ stats.totalTurmas }}</span>
+          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Turmas com sala</p>
+        </div>
+      </div>
 
-        <!-- filtro de prédio -->
+      <!-- navegação + filtro -->
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <WeekStrip
+          v-model="selectedDate"
+          :start-date="semester.startDate"
+          :end-date="semester.endDate"
+          :counts="countsForWeek"
+        />
         <select
           v-model="selectedBuilding"
           class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
@@ -307,134 +292,83 @@ watch(activeRooms, () => {
         title="Nenhuma sala"
         description="Cadastre salas (e prédios) para montar o cronograma."
       />
-      <ScheduleGrid
-        v-else
-        :rooms="gridRooms"
-        :buildings="buildings"
-        :weekly="weeklyForDay"
-        :day="selectedDay"
-        :turma-by-id="turmaById"
-        :can-manage="canManage"
-        :group-by-building="!selectedBuilding"
-        @add-at="openCreate({ ...$event, day: selectedDay })"
-        @move="openMove"
-        @remove="confirmTarget = $event"
-      />
+      <template v-else>
+        <ScheduleGrid
+          :rooms="gridRooms"
+          :buildings="buildings"
+          :events="eventsForDate"
+          :turma-by-id="turmaById"
+          :can-manage="canManage"
+          :group-by-building="!selectedBuilding"
+          :highlight-id="highlightId"
+          @add-at="openCreate($event)"
+          @open="openEdit"
+          @remove="confirmTarget = $event"
+        />
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+          <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded-sm bg-primary-500" /> Recorrente</span>
+          <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded-sm bg-gradient-to-r from-amber-400 via-rose-500 to-sky-500" /> Único (cor escolhida)</span>
+          <span v-if="canManage">Clique numa célula vazia para adicionar; clique num evento para editar.</span>
+        </div>
+      </template>
 
-      <p class="text-xs text-gray-400 dark:text-gray-500">
-        Clique numa célula vazia para alocar; clique numa turma para mover. As utilizações de <strong>dia único</strong> aparecem abaixo.
+      <!-- lista: só eventos únicos -->
+      <section class="flex flex-col gap-2">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Eventos únicos</h2>
+        <p v-if="singles.length === 0" class="text-sm text-gray-400 dark:text-gray-500">
+          Nenhum evento único no semestre.
+        </p>
+        <ul
+          v-else
+          class="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-100 bg-white dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800"
+        >
+          <li v-for="a in singles" :key="a.id">
+            <div
+              role="button"
+              tabindex="0"
+              class="flex cursor-pointer flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm transition-colors hover:bg-gray-50 focus:bg-gray-50 focus:outline-none dark:hover:bg-gray-700/50 dark:focus:bg-gray-700/50"
+              :class="selectedDate === a.date ? 'bg-gray-50 dark:bg-gray-700/40' : ''"
+              :title="'Ver na grade'"
+              @click="goToEvent(a)"
+              @keydown.enter="goToEvent(a)"
+            >
+              <span class="h-3 w-3 shrink-0 rounded-full" :class="eventClasses(a).swatch" />
+              <span class="w-36 text-gray-700 dark:text-gray-200">
+                {{ formatDateBR(a.date!) }} <span class="text-gray-400 dark:text-gray-500">{{ dayLabel(a.timeSlot.day).slice(0, 3) }}</span>
+              </span>
+              <span class="w-24 font-mono text-gray-600 dark:text-gray-300">{{ a.timeSlot.start }}–{{ a.timeSlot.end }}</span>
+              <span class="font-medium text-gray-800 dark:text-gray-100">{{ eventTitle(a) }}</span>
+              <span class="text-gray-500 dark:text-gray-400">{{ roomLabel(a.roomId) }}</span>
+              <span v-if="canManage" class="ml-auto flex gap-1">
+                <AppButton variant="ghost" size="sm" @click.stop="openEdit(a)">Editar</AppButton>
+                <AppButton variant="ghost" size="sm" @click.stop="confirmTarget = a">Remover</AppButton>
+              </span>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <p v-if="canManage && activeTurmas.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
+        Sem turmas cadastradas: por enquanto só é possível criar eventos únicos de texto livre.
       </p>
 
-      <!-- dia único (fora da grade semanal) -->
-      <section v-if="singleByDate.length" class="flex flex-col gap-3">
-        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Dia único</h2>
-        <div
-          v-for="g in singleByDate"
-          :key="g.date"
-          class="overflow-hidden rounded-xl border border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800"
-        >
-          <h3 class="flex items-center gap-2 border-b border-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-200">
-            {{ formatDateBR(g.date) }}
-            <AppBadge variant="neutral" :label="dayLabel(g.items[0].timeSlot.day)" />
-          </h3>
-          <ul class="divide-y divide-gray-100 dark:divide-gray-700">
-            <li v-for="a in g.items" :key="a.id" class="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm">
-              <span class="w-24 font-mono text-gray-600 dark:text-gray-300">{{ slotLabel(a) }}</span>
-              <span class="text-gray-800 dark:text-gray-100">{{ roomLabel(a.roomId) }}</span>
-              <span class="text-gray-500 dark:text-gray-400">{{ turmaLabel(a.turmaId) }}</span>
-              <span v-if="canManage" class="ml-auto flex gap-1">
-                <AppButton variant="ghost" size="sm" @click="openMove(a)">Mover</AppButton>
-                <AppButton variant="ghost" size="sm" @click="confirmTarget = a">Remover</AppButton>
-              </span>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <AllocationModal
+        :open="modalOpen"
+        :project-id="projectId"
+        :turmas="activeTurmas"
+        :rooms="activeRooms"
+        :semester="semester"
+        :editing="editing"
+        :prefill="prefill"
+        @saved="onSaved"
+        @close="modalOpen = false"
+      />
     </template>
-
-    <!-- ===================== LISTA (v1) ===================== -->
-    <template v-else>
-      <AppEmptyState
-        v-if="allocations.length === 0"
-        title="Cronograma vazio"
-        :description="canManage ? 'Adicione a primeira utilização de sala do projeto.' : 'Nenhuma utilização cadastrada.'"
-      >
-        <template #action>
-          <AppButton v-if="canManage" @click="openCreate()">Adicionar utilização</AppButton>
-        </template>
-      </AppEmptyState>
-
-      <template v-else>
-        <section v-if="weeklyByDay.length" class="flex flex-col gap-3">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Semanal</h2>
-          <div
-            v-for="g in weeklyByDay"
-            :key="g.day"
-            class="overflow-hidden rounded-xl border border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800"
-          >
-            <h3 class="border-b border-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-200">
-              {{ g.long }}
-            </h3>
-            <ul class="divide-y divide-gray-100 dark:divide-gray-700">
-              <li v-for="a in g.items" :key="a.id" class="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm">
-                <span class="w-24 font-mono text-gray-600 dark:text-gray-300">{{ slotLabel(a) }}</span>
-                <span class="text-gray-800 dark:text-gray-100">{{ roomLabel(a.roomId) }}</span>
-                <span class="text-gray-500 dark:text-gray-400">{{ turmaLabel(a.turmaId) }}</span>
-                <span v-if="canManage" class="ml-auto flex gap-1">
-                  <AppButton variant="ghost" size="sm" @click="openMove(a)">Mover</AppButton>
-                  <AppButton variant="ghost" size="sm" @click="confirmTarget = a">Remover</AppButton>
-                </span>
-              </li>
-            </ul>
-          </div>
-        </section>
-
-        <section v-if="singleByDate.length" class="flex flex-col gap-3">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Dia único</h2>
-          <div
-            v-for="g in singleByDate"
-            :key="g.date"
-            class="overflow-hidden rounded-xl border border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800"
-          >
-            <h3 class="flex items-center gap-2 border-b border-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-200">
-              {{ formatDateBR(g.date) }}
-              <AppBadge variant="neutral" :label="dayLabel(g.items[0].timeSlot.day)" />
-            </h3>
-            <ul class="divide-y divide-gray-100 dark:divide-gray-700">
-              <li v-for="a in g.items" :key="a.id" class="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm">
-                <span class="w-24 font-mono text-gray-600 dark:text-gray-300">{{ slotLabel(a) }}</span>
-                <span class="text-gray-800 dark:text-gray-100">{{ roomLabel(a.roomId) }}</span>
-                <span class="text-gray-500 dark:text-gray-400">{{ turmaLabel(a.turmaId) }}</span>
-                <span v-if="canManage" class="ml-auto flex gap-1">
-                  <AppButton variant="ghost" size="sm" @click="openMove(a)">Mover</AppButton>
-                  <AppButton variant="ghost" size="sm" @click="confirmTarget = a">Remover</AppButton>
-                </span>
-              </li>
-            </ul>
-          </div>
-        </section>
-      </template>
-    </template>
-
-    <p v-if="canManage && activeTurmas.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
-      Cadastre turmas no projeto antes de montar o cronograma.
-    </p>
-
-    <AllocationModal
-      :open="modalOpen"
-      :project-id="projectId"
-      :turmas="activeTurmas"
-      :rooms="activeRooms"
-      :editing="editing"
-      :prefill="prefill"
-      @saved="onSaved"
-      @close="modalOpen = false"
-    />
 
     <AppConfirmDialog
       :open="!!confirmTarget"
-      title="Remover utilização"
-      message="Tem certeza que deseja remover esta utilização do cronograma?"
+      title="Remover evento"
+      message="Tem certeza que deseja remover este evento do cronograma?"
       confirm-label="Remover"
       variant="danger"
       :loading="deleting"

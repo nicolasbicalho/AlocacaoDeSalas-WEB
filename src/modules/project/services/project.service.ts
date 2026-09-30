@@ -4,6 +4,9 @@ import type { IProject, ApiSuccess, PaginatedResponse, ProjectStatus } from '@/t
 export interface ProjectPayload {
   name: string
   semester: string
+  /** 'YYYY-MM-DD' */
+  startDate: string
+  endDate: string
 }
 
 export async function listProjects(params: {

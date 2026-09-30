@@ -1,12 +1,12 @@
 import api from '@/services/api'
-import type { IRoom, RoomAttribute, ApiSuccess, PaginatedResponse } from '@/types'
+import type { IRoom, RoomFeature, ApiSuccess, PaginatedResponse } from '@/types'
 
 export interface RoomCreatePayload {
   buildingId: string
   name: string
   code: string
   capacity: number
-  attributes: RoomAttribute[]
+  features: RoomFeature[]
 }
 
 export type RoomUpdatePayload = Partial<Omit<RoomCreatePayload, 'buildingId'>>

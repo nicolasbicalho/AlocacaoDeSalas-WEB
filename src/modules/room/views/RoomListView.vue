@@ -11,6 +11,7 @@ import { listRooms } from '../services/room.service'
 import { getBuilding } from '@/modules/building/services/building.service'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
+import { featureLabel } from '@/shared/constants/roomFeatures'
 import type { IRoom } from '@/types'
 
 const route = useRoute()
@@ -25,7 +26,7 @@ const columns = [
   { key: 'name', label: 'Nome' },
   { key: 'code', label: 'Código' },
   { key: 'capacity', label: 'Capacidade' },
-  { key: 'attributes', label: 'Atributos' },
+  { key: 'features', label: 'Características' },
   { key: 'active', label: 'Status' },
   { key: 'actions', label: 'Ações' },
 ]
@@ -99,7 +100,18 @@ function changePage(target: number) {
 
     <template v-else>
       <AppTable :columns="columns" :rows="rows" :loading="loading">
-        <template #cell-attributes="{ row }">{{ asRoom(row).attributes.length }}</template>
+        <template #cell-features="{ row }">
+          <div class="flex flex-wrap gap-1">
+            <span
+              v-for="f in asRoom(row).features"
+              :key="f"
+              class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700 dark:bg-gray-700 dark:text-gray-200"
+            >
+              {{ featureLabel(f) }}
+            </span>
+            <span v-if="asRoom(row).features.length === 0" class="text-gray-400 dark:text-gray-500">—</span>
+          </div>
+        </template>
         <template #cell-active="{ row }">
           <AppBadge :variant="asRoom(row).active ? 'success' : 'neutral'" :label="asRoom(row).active ? 'Ativa' : 'Inativa'" />
         </template>

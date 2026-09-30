@@ -5,14 +5,14 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
 import AppInput from '@/shared/components/AppInput.vue'
 import AppButton from '@/shared/components/AppButton.vue'
-import RoomAttributesEditor from './RoomAttributesEditor.vue'
-import type { RoomAttribute } from '@/types'
+import FeatureCheckboxes from '@/shared/components/FeatureCheckboxes.vue'
+import type { RoomFeature } from '@/types'
 
 interface RoomValues {
   name: string
   code: string
   capacity: number
-  attributes: RoomAttribute[]
+  features: RoomFeature[]
 }
 
 const props = withDefaults(
@@ -27,7 +27,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{ submit: [values: RoomValues] }>()
 
-// nome/código via VeeValidate; capacidade tratada como texto (parse manual); atributos via editor
+// nome/código via VeeValidate; capacidade tratada como texto (parse manual); características via checkboxes
 const schema = toTypedSchema(
   z.object({
     name: z.string().min(1, 'Informe o nome'),
@@ -44,8 +44,8 @@ const [name] = defineField('name')
 const [code] = defineField('code')
 const capacity = ref(props.initialValues?.capacity != null ? String(props.initialValues.capacity) : '')
 const capacityError = ref('')
-const attributes = ref<RoomAttribute[]>(
-  props.initialValues?.attributes ? [...props.initialValues.attributes] : [],
+const features = ref<RoomFeature[]>(
+  props.initialValues?.features ? [...props.initialValues.features] : [],
 )
 
 watch(
@@ -54,7 +54,7 @@ watch(
     if (v) {
       resetForm({ values: { name: v.name, code: v.code } })
       capacity.value = v.capacity != null ? String(v.capacity) : ''
-      attributes.value = [...v.attributes]
+      features.value = [...v.features]
     }
   },
 )
@@ -66,7 +66,7 @@ const onSubmit = handleSubmit((values) => {
     return
   }
   capacityError.value = ''
-  emit('submit', { ...values, capacity: cap, attributes: attributes.value })
+  emit('submit', { ...values, capacity: cap, features: features.value })
 })
 
 defineExpose({
@@ -101,7 +101,12 @@ defineExpose({
       :disabled="readonly || loading"
       required
     />
-    <RoomAttributesEditor v-model="attributes" :readonly="readonly || loading" />
+    <FeatureCheckboxes
+      v-model="features"
+      label="Características"
+      hint="Marque o que a sala possui. As turmas só são alocadas em salas que atendem aos seus requisitos."
+      :readonly="readonly || loading"
+    />
     <div v-if="!readonly" class="flex justify-end gap-3">
       <slot name="actions" />
       <AppButton type="submit" :loading="loading">{{ submitLabel }}</AppButton>

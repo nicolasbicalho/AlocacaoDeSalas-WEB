@@ -6,7 +6,7 @@ import RoomForm from '../components/RoomForm.vue'
 import AppButton from '@/shared/components/AppButton.vue'
 import { createRoom } from '../services/room.service'
 import { useUiStore } from '@/stores/ui'
-import type { RoomAttribute } from '@/types'
+import type { RoomFeature } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,7 +16,7 @@ const buildingId = route.params.buildingId as string
 const loading = ref(false)
 const formRef = ref<InstanceType<typeof RoomForm> | null>(null)
 
-async function onSubmit(values: { name: string; code: string; capacity: number; attributes: RoomAttribute[] }) {
+async function onSubmit(values: { name: string; code: string; capacity: number; features: RoomFeature[] }) {
   loading.value = true
   try {
     const room = await createRoom({ buildingId, ...values })

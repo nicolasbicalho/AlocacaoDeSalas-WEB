@@ -35,12 +35,14 @@ export interface IBuilding {
   updatedAt: string
 }
 
-export type RoomAttributeValue = string | number | boolean
-
-export interface RoomAttribute {
-  key: string
-  value: RoomAttributeValue
-}
+/** Catálogo fixo de características de sala (espelha `ROOM_FEATURES` da API). */
+export type RoomFeature =
+  | 'projetor'
+  | 'ar_condicionado'
+  | 'acessibilidade'
+  | 'computadores'
+  | 'som'
+  | 'bancadas'
 
 export interface IRoom {
   id: string
@@ -49,7 +51,7 @@ export interface IRoom {
   buildingId: string
   instituteId: string
   capacity: number
-  attributes: RoomAttribute[]
+  features: RoomFeature[]
   active: boolean
   createdAt: string
   updatedAt: string
@@ -63,6 +65,9 @@ export interface IProject {
   semester: string
   instituteId: string
   status: ProjectStatus
+  /** 'YYYY-MM-DD' — início e fim do semestre */
+  startDate: string
+  endDate: string
   createdAt: string
   updatedAt: string
 }
@@ -83,26 +88,76 @@ export interface ITurma {
   code?: string
   studentCount: number
   professor: string
-  requiredAttributes: string[]
+  requiredFeatures: RoomFeature[]
   schedule: TimeSlot[]
   active: boolean
   createdAt: string
   updatedAt: string
 }
 
+/** `weekly` = evento recorrente (sempre de turma); `single` = evento único */
 export type AllocationType = 'weekly' | 'single'
+
+/** Paleta fixa dos eventos únicos (espelha `EVENT_COLORS` da API). */
+export type EventColor = 'amber' | 'emerald' | 'rose' | 'violet' | 'sky' | 'orange'
 
 export interface IAllocation {
   id: string
   projectId: string
   instituteId: string
-  turmaId: string
+  /** ausente em evento único de texto livre (ex.: palestra) */
+  turmaId?: string
+  /** título livre — só em evento único sem turma */
+  title?: string
   roomId: string
   timeSlot: TimeSlot
   type: AllocationType
   date?: string
+  color?: EventColor
   createdAt: string
   updatedAt: string
+}
+
+export type AuditEntity =
+  | 'auth'
+  | 'user'
+  | 'institute'
+  | 'project'
+  | 'building'
+  | 'room'
+  | 'turma'
+  | 'allocation'
+
+export type AuditAction =
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'move'
+  | 'activate'
+  | 'deactivate'
+  | 'close'
+  | 'login'
+  | 'login_failed'
+  | 'logout'
+  | 'forgot_password'
+  | 'reset_password'
+
+export interface IAuditLog {
+  id: string
+  userId?: string
+  userName?: string
+  userEmail?: string
+  role?: string
+  action: AuditAction
+  entity: AuditEntity
+  entityId?: string
+  method: string
+  path: string
+  statusCode: number
+  details?: unknown
+  ip?: string
+  userAgent?: string
+  createdAt: string
 }
 
 export interface ApiSuccess<T> {

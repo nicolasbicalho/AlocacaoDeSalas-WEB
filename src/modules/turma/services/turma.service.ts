@@ -1,5 +1,5 @@
 import api from '@/services/api'
-import type { ITurma, TimeSlot, ApiSuccess, PaginatedResponse } from '@/types'
+import type { ITurma, RoomFeature, TimeSlot, ApiSuccess, PaginatedResponse } from '@/types'
 
 export interface TurmaCreatePayload {
   projectId: string
@@ -7,7 +7,7 @@ export interface TurmaCreatePayload {
   code?: string
   studentCount: number
   professor: string
-  requiredAttributes: string[]
+  requiredFeatures: RoomFeature[]
   schedule: TimeSlot[]
 }
 

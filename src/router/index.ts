@@ -8,6 +8,7 @@ import { buildingRoutes } from '@/modules/building'
 import { roomRoutes } from '@/modules/room'
 import { turmaRoutes } from '@/modules/turma'
 import { allocationRoutes } from '@/modules/allocation'
+import { auditRoutes } from '@/modules/audit'
 import { useAuthStore } from '@/stores/auth'
 
 declare module 'vue-router' {
@@ -28,6 +29,7 @@ const routes: RouteRecordRaw[] = [
   ...roomRoutes,
   ...turmaRoutes,
   ...allocationRoutes,
+  ...auditRoutes,
   { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
 ]
 

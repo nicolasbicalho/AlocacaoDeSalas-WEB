@@ -10,7 +10,7 @@ import AppConfirmDialog from '@/shared/components/AppConfirmDialog.vue'
 import { getRoom, updateRoom, deactivateRoom } from '../services/room.service'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
-import type { IRoom, RoomAttribute } from '@/types'
+import type { IRoom, RoomFeature } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,7 +32,7 @@ const initialValues = computed(() =>
         name: room.value.name,
         code: room.value.code,
         capacity: room.value.capacity,
-        attributes: room.value.attributes,
+        features: room.value.features,
       }
     : undefined,
 )
@@ -57,7 +57,7 @@ onMounted(async () => {
   }
 })
 
-async function onSubmit(values: { name: string; code: string; capacity: number; attributes: RoomAttribute[] }) {
+async function onSubmit(values: { name: string; code: string; capacity: number; features: RoomFeature[] }) {
   saving.value = true
   try {
     room.value = await updateRoom(id, values)

@@ -59,6 +59,14 @@ async function handleLogout() {
           >
             Prédios
           </RouterLink>
+          <RouterLink
+            v-if="auth.isAdmin"
+            to="/audit"
+            class="text-gray-600 transition hover:text-primary-700 dark:text-gray-300 dark:hover:text-primary-400"
+            active-class="font-medium text-primary-700 dark:text-primary-400"
+          >
+            Auditoria
+          </RouterLink>
         </nav>
       </div>
       <div class="flex items-center gap-4">
