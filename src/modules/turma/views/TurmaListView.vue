@@ -8,7 +8,6 @@ import AppButton from '@/shared/components/AppButton.vue'
 import AppEmptyState from '@/shared/components/AppEmptyState.vue'
 import AppBadge from '@/shared/components/AppBadge.vue'
 import { listTurmas } from '../services/turma.service'
-import { getProject } from '@/modules/project/services/project.service'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import type { ITurma } from '@/types'
@@ -19,7 +18,6 @@ const auth = useAuthStore()
 const ui = useUiStore()
 
 const projectId = route.params.projectId as string
-const projectName = ref('')
 
 const columns = [
   { key: 'name', label: 'Nome' },
@@ -57,18 +55,8 @@ async function fetchTurmas() {
   }
 }
 
-onMounted(async () => {
-  try {
-    projectName.value = (await getProject(projectId)).name
-  } catch (err) {
-    if (isAxiosError(err) && (err.response?.status === 404 || err.response?.status === 403)) {
-      ui.toast({ message: 'Projeto não encontrado ou sem acesso.', variant: 'error' })
-      router.push('/projects')
-      return
-    }
-  }
-  await fetchTurmas()
-})
+// o ProjectShell já validou o projeto (existência e acesso)
+onMounted(fetchTurmas)
 
 function changePage(target: number) {
   page.value = target
@@ -78,13 +66,8 @@ function changePage(target: number) {
 
 <template>
   <div class="flex flex-col gap-4">
-    <nav class="text-sm text-gray-500 dark:text-gray-400">
-      <RouterLink to="/projects" class="hover:underline">Projetos</RouterLink>
-      <span> / {{ projectName || '...' }} / Turmas</span>
-    </nav>
-
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Turmas</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Turmas do projeto, com a grade de horários e os requisitos de sala.</p>
       <AppButton v-if="auth.isUser" @click="router.push(`/projects/${projectId}/turmas/new`)">Nova turma</AppButton>
     </div>
 
@@ -106,7 +89,7 @@ function changePage(target: number) {
           <AppBadge :variant="asTurma(row).active ? 'success' : 'neutral'" :label="asTurma(row).active ? 'Ativa' : 'Inativa'" />
         </template>
         <template #cell-actions="{ row }">
-          <AppButton variant="ghost" size="sm" @click="router.push(`/turmas/${asTurma(row).id}`)">Ver</AppButton>
+          <AppButton variant="ghost" size="sm" @click="router.push(`/projects/${projectId}/turmas/${asTurma(row).id}`)">Ver</AppButton>
         </template>
       </AppTable>
 

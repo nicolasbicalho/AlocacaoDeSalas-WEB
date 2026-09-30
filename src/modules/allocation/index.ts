@@ -1,9 +1,10 @@
 import type { RouteRecordRaw } from 'vue-router'
 
-export const allocationRoutes: RouteRecordRaw[] = [
+/** Filha de `/projects/:projectId` (renderizada dentro do ProjectShell). */
+export const allocationProjectChildren: RouteRecordRaw[] = [
   {
-    path: '/projects/:projectId/allocation',
+    path: 'allocation',
     component: () => import('./views/AllocationView.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'user'], layout: 'AppLayout' },
+    meta: { requiresAuth: true, section: 'allocation' },
   },
 ]

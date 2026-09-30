@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppBreadcrumb from '@/shared/components/AppBreadcrumb.vue'
 import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { isAxiosError } from 'axios'
@@ -93,10 +94,7 @@ async function confirmDeactivate() {
   </div>
 
   <div v-else-if="institute" class="mx-auto flex max-w-lg flex-col gap-4">
-    <nav class="text-sm text-gray-500 dark:text-gray-400">
-      <RouterLink to="/institutes" class="hover:underline">Institutos</RouterLink>
-      <span> / {{ institute.name }}</span>
-    </nav>
+    <AppBreadcrumb :items="[{ label: 'Institutos', to: '/institutes' }, { label: institute.name }]" />
 
     <div class="flex items-center gap-3">
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ institute.name }}</h1>

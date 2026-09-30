@@ -7,7 +7,6 @@ import { projectRoutes } from '@/modules/project'
 import { buildingRoutes } from '@/modules/building'
 import { roomRoutes } from '@/modules/room'
 import { turmaRoutes } from '@/modules/turma'
-import { allocationRoutes } from '@/modules/allocation'
 import { auditRoutes } from '@/modules/audit'
 import { useAuthStore } from '@/stores/auth'
 
@@ -16,6 +15,10 @@ declare module 'vue-router' {
     requiresAuth: boolean
     roles?: ('admin' | 'user')[]
     layout?: 'AppLayout' | 'AuthLayout'
+    /** aba ativa dentro de um shell de contexto (projeto ou prédio) */
+    section?: 'overview' | 'turmas' | 'allocation' | 'rooms'
+    /** tipo da página-folha, usado no breadcrumb do shell */
+    leaf?: 'new' | 'detail'
   }
 }
 
@@ -28,7 +31,6 @@ const routes: RouteRecordRaw[] = [
   ...buildingRoutes,
   ...roomRoutes,
   ...turmaRoutes,
-  ...allocationRoutes,
   ...auditRoutes,
   { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
 ]

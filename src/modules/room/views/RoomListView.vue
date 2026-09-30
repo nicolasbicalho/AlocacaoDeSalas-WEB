@@ -8,7 +8,6 @@ import AppButton from '@/shared/components/AppButton.vue'
 import AppEmptyState from '@/shared/components/AppEmptyState.vue'
 import AppBadge from '@/shared/components/AppBadge.vue'
 import { listRooms } from '../services/room.service'
-import { getBuilding } from '@/modules/building/services/building.service'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { featureLabel } from '@/shared/constants/roomFeatures'
@@ -20,7 +19,6 @@ const auth = useAuthStore()
 const ui = useUiStore()
 
 const buildingId = route.params.buildingId as string
-const buildingName = ref('')
 
 const columns = [
   { key: 'name', label: 'Nome' },
@@ -57,18 +55,8 @@ async function fetchRooms() {
   }
 }
 
-onMounted(async () => {
-  try {
-    buildingName.value = (await getBuilding(buildingId)).name
-  } catch (err) {
-    if (isAxiosError(err) && (err.response?.status === 404 || err.response?.status === 403)) {
-      ui.toast({ message: 'Prédio não encontrado ou sem acesso.', variant: 'error' })
-      router.push('/buildings')
-      return
-    }
-  }
-  await fetchRooms()
-})
+// o BuildingShell já validou o prédio (existência e acesso)
+onMounted(fetchRooms)
 
 function changePage(target: number) {
   page.value = target
@@ -78,13 +66,8 @@ function changePage(target: number) {
 
 <template>
   <div class="flex flex-col gap-4">
-    <nav class="text-sm text-gray-500 dark:text-gray-400">
-      <RouterLink to="/buildings" class="hover:underline">Prédios</RouterLink>
-      <span> / {{ buildingName || '...' }} / Salas</span>
-    </nav>
-
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Salas</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Salas do prédio, com capacidade e características.</p>
       <AppButton v-if="auth.isUser" @click="router.push(`/buildings/${buildingId}/rooms/new`)">Nova sala</AppButton>
     </div>
 
@@ -116,7 +99,7 @@ function changePage(target: number) {
           <AppBadge :variant="asRoom(row).active ? 'success' : 'neutral'" :label="asRoom(row).active ? 'Ativa' : 'Inativa'" />
         </template>
         <template #cell-actions="{ row }">
-          <AppButton variant="ghost" size="sm" @click="router.push(`/rooms/${asRoom(row).id}`)">Ver</AppButton>
+          <AppButton variant="ghost" size="sm" @click="router.push(`/buildings/${buildingId}/rooms/${asRoom(row).id}`)">Ver</AppButton>
         </template>
       </AppTable>
 

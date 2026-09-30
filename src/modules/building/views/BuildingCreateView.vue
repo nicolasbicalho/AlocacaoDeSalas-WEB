@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppBreadcrumb from '@/shared/components/AppBreadcrumb.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { isAxiosError } from 'axios'
@@ -33,10 +34,7 @@ async function onSubmit(values: BuildingPayload) {
 
 <template>
   <div class="mx-auto flex max-w-lg flex-col gap-4">
-    <nav class="text-sm text-gray-500 dark:text-gray-400">
-      <RouterLink to="/buildings" class="hover:underline">Prédios</RouterLink>
-      <span> / Novo prédio</span>
-    </nav>
+    <AppBreadcrumb :items="[{ label: 'Prédios', to: '/buildings' }, { label: 'Novo prédio' }]" />
     <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Novo prédio</h1>
 
     <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">

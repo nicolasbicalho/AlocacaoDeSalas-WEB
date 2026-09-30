@@ -216,7 +216,7 @@ const shortDay = (d: Parameters<typeof dayLabel>[0]) => dayLabel(d).slice(0, 3)
           </li>
           <li v-for="t in cov.withoutSchedule" :key="t.id">
             <RouterLink
-              :to="`/turmas/${t.id}`"
+              :to="`/projects/${project.id}/turmas/${t.id}`"
               class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700/50"
             >
               <span class="text-gray-400" aria-hidden="true">•</span>

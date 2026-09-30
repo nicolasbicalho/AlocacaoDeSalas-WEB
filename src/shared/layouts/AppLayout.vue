@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { logout as logoutRequest } from '@/modules/auth/services/auth.service'
 import AppButton from '@/shared/components/AppButton.vue'
@@ -8,6 +8,21 @@ import ThemeToggle from '@/shared/components/ThemeToggle.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
+
+const navItems = computed(() => [
+  { to: '/dashboard', label: 'Início' },
+  ...(auth.isAdmin ? [{ to: '/institutes', label: 'Institutos' }] : []),
+  { to: '/projects', label: 'Projetos' },
+  { to: '/buildings', label: 'Prédios' },
+  ...(auth.isAdmin ? [{ to: '/audit', label: 'Auditoria' }] : []),
+])
+
+// seção ativa por prefixo: em /projects/:id/turmas/... o item "Projetos" continua destacado
+function isActive(prefix: string): boolean {
+  return route.path === prefix || route.path.startsWith(`${prefix}/`)
+}
+
 const loggingOut = ref(false)
 
 async function handleLogout() {
@@ -31,41 +46,18 @@ async function handleLogout() {
         <span class="text-lg font-semibold text-primary-700 dark:text-primary-400">AlocaçãoDeSalas</span>
         <nav class="flex items-center gap-4 text-sm">
           <RouterLink
-            to="/dashboard"
-            class="text-gray-600 transition hover:text-primary-700 dark:text-gray-300 dark:hover:text-primary-400"
-            active-class="font-medium text-primary-700 dark:text-primary-400"
+            v-for="item in navItems"
+            :key="item.to"
+            :to="item.to"
+            class="transition"
+            :class="
+              isActive(item.to)
+                ? 'font-medium text-primary-700 dark:text-primary-400'
+                : 'text-gray-600 hover:text-primary-700 dark:text-gray-300 dark:hover:text-primary-400'
+            "
+            :aria-current="isActive(item.to) ? 'page' : undefined"
           >
-            Início
-          </RouterLink>
-          <RouterLink
-            v-if="auth.isAdmin"
-            to="/institutes"
-            class="text-gray-600 transition hover:text-primary-700 dark:text-gray-300 dark:hover:text-primary-400"
-            active-class="font-medium text-primary-700 dark:text-primary-400"
-          >
-            Institutos
-          </RouterLink>
-          <RouterLink
-            to="/projects"
-            class="text-gray-600 transition hover:text-primary-700 dark:text-gray-300 dark:hover:text-primary-400"
-            active-class="font-medium text-primary-700 dark:text-primary-400"
-          >
-            Projetos
-          </RouterLink>
-          <RouterLink
-            to="/buildings"
-            class="text-gray-600 transition hover:text-primary-700 dark:text-gray-300 dark:hover:text-primary-400"
-            active-class="font-medium text-primary-700 dark:text-primary-400"
-          >
-            Prédios
-          </RouterLink>
-          <RouterLink
-            v-if="auth.isAdmin"
-            to="/audit"
-            class="text-gray-600 transition hover:text-primary-700 dark:text-gray-300 dark:hover:text-primary-400"
-            active-class="font-medium text-primary-700 dark:text-primary-400"
-          >
-            Auditoria
+            {{ item.label }}
           </RouterLink>
         </nav>
       </div>

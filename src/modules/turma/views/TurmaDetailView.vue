@@ -8,6 +8,7 @@ import AppSpinner from '@/shared/components/AppSpinner.vue'
 import AppBadge from '@/shared/components/AppBadge.vue'
 import AppConfirmDialog from '@/shared/components/AppConfirmDialog.vue'
 import { getTurma, updateTurma, deactivateTurma, type TurmaUpdatePayload } from '../services/turma.service'
+import { useProjectContext } from '@/modules/project/projectContext'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import type { ITurma } from '@/types'
@@ -16,8 +17,12 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const ui = useUiStore()
+const { leafLabel } = useProjectContext()
 
-const id = route.params.id as string
+const projectId = route.params.projectId as string
+const turmaId = route.params.turmaId as string
+const listPath = `/projects/${projectId}/turmas`
+
 const turma = ref<ITurma | null>(null)
 const loadingPage = ref(true)
 const saving = ref(false)
@@ -41,19 +46,21 @@ const initialValues = computed(() =>
 
 onMounted(async () => {
   try {
-    turma.value = await getTurma(id)
+    const loaded = await getTurma(turmaId)
+    // URL com o projeto errado: corrige para o projeto real da turma
+    if (loaded.projectId !== projectId) {
+      router.replace(`/projects/${loaded.projectId}/turmas/${loaded.id}`)
+      return
+    }
+    turma.value = loaded
+    leafLabel.value = loaded.name
   } catch (err) {
-    if (isAxiosError(err) && err.response?.status === 404) {
-      ui.toast({ message: 'Turma não encontrada.', variant: 'error' })
-      router.push('/projects')
-      return
-    }
-    if (isAxiosError(err) && err.response?.status === 403) {
-      ui.toast({ message: 'Você não tem acesso a esta turma.', variant: 'error' })
-      router.push('/projects')
-      return
-    }
-    ui.toast({ message: 'Erro ao carregar a turma.', variant: 'error' })
+    const status = isAxiosError(err) ? err.response?.status : undefined
+    ui.toast({
+      message: status === 404 || status === 403 ? 'Turma não encontrada ou sem acesso.' : 'Erro ao carregar a turma.',
+      variant: 'error',
+    })
+    router.replace(listPath)
   } finally {
     loadingPage.value = false
   }
@@ -62,7 +69,8 @@ onMounted(async () => {
 async function onSubmit(values: TurmaUpdatePayload) {
   saving.value = true
   try {
-    turma.value = await updateTurma(id, values)
+    turma.value = await updateTurma(turmaId, values)
+    leafLabel.value = turma.value.name
     ui.toast({ message: 'Turma atualizada com sucesso', variant: 'success' })
   } catch (err) {
     if (isAxiosError(err) && err.response?.data?.error?.code === 'TURMA_CODE_EXISTS') {
@@ -78,10 +86,9 @@ async function onSubmit(values: TurmaUpdatePayload) {
 async function confirmDeactivate() {
   deactivating.value = true
   try {
-    await deactivateTurma(id)
+    await deactivateTurma(turmaId)
     ui.toast({ message: 'Turma desativada', variant: 'success' })
-    if (turma.value) router.push(`/projects/${turma.value.projectId}/turmas`)
-    else router.push('/projects')
+    router.push(listPath)
   } catch {
     ui.toast({ message: 'Erro ao desativar a turma.', variant: 'error' })
   } finally {
@@ -96,20 +103,12 @@ async function confirmDeactivate() {
     <AppSpinner size="lg" />
   </div>
 
-  <div v-else-if="turma" class="mx-auto flex max-w-lg flex-col gap-4">
-    <nav class="text-sm text-gray-500 dark:text-gray-400">
-      <RouterLink to="/projects" class="hover:underline">Projetos</RouterLink>
-      <span> / </span>
-      <RouterLink :to="`/projects/${turma.projectId}/turmas`" class="hover:underline">Turmas</RouterLink>
-      <span> / {{ turma.name }}</span>
-    </nav>
-
-    <div class="flex items-center gap-3">
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ turma.name }}</h1>
-      <AppBadge :variant="turma.active ? 'success' : 'neutral'" :label="turma.active ? 'Ativa' : 'Inativa'" />
-    </div>
-
+  <div v-else-if="turma" class="flex max-w-lg flex-col gap-4">
     <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div class="mb-4 flex items-center gap-3">
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ turma.name }}</h2>
+        <AppBadge :variant="turma.active ? 'success' : 'neutral'" :label="turma.active ? 'Ativa' : 'Inativa'" />
+      </div>
       <TurmaForm
         ref="formRef"
         :initial-values="initialValues"
@@ -117,7 +116,13 @@ async function confirmDeactivate() {
         :loading="saving"
         submit-label="Salvar alterações"
         @submit="onSubmit"
-      />
+      >
+        <template #actions>
+          <AppButton variant="secondary" type="button" :disabled="saving" @click="router.push(listPath)">
+            Voltar
+          </AppButton>
+        </template>
+      </TurmaForm>
       <p v-if="!canEdit" class="mt-2 text-sm text-gray-500 dark:text-gray-400">
         Você tem acesso somente leitura a esta turma.
       </p>

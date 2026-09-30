@@ -1,32 +1,24 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
 import { isAxiosError } from 'axios'
 import ProjectForm from '../components/ProjectForm.vue'
-import ProjectStatusBadge from '../components/ProjectStatusBadge.vue'
 import AppButton from '@/shared/components/AppButton.vue'
-import AppSpinner from '@/shared/components/AppSpinner.vue'
 import AppConfirmDialog from '@/shared/components/AppConfirmDialog.vue'
 import {
-  getProject,
   updateProject,
   activateProject,
   closeProject,
   type ProjectPayload,
 } from '../services/project.service'
-import { formatDateBR } from '@/modules/allocation/helpers'
+import { useProjectContext } from '../projectContext'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
-import type { IProject } from '@/types'
 
-const route = useRoute()
-const router = useRouter()
+// aba "Visão geral" do ProjectShell: o projeto já vem carregado pelo contexto
 const auth = useAuthStore()
 const ui = useUiStore()
+const { project, setProject } = useProjectContext()
 
-const id = route.params.id as string
-const project = ref<IProject | null>(null)
-const loadingPage = ref(true)
 const saving = ref(false)
 const transitioning = ref(false)
 const confirmClose = ref(false)
@@ -44,30 +36,11 @@ const initialValues = computed<ProjectPayload | undefined>(() =>
     : undefined,
 )
 
-onMounted(async () => {
-  try {
-    project.value = await getProject(id)
-  } catch (err) {
-    if (isAxiosError(err) && err.response?.status === 404) {
-      ui.toast({ message: 'Projeto não encontrado.', variant: 'error' })
-      router.push('/projects')
-      return
-    }
-    if (isAxiosError(err) && err.response?.status === 403) {
-      ui.toast({ message: 'Você não tem acesso a este projeto.', variant: 'error' })
-      router.push('/projects')
-      return
-    }
-    ui.toast({ message: 'Erro ao carregar o projeto.', variant: 'error' })
-  } finally {
-    loadingPage.value = false
-  }
-})
-
 async function onSubmit(values: ProjectPayload) {
+  if (!project.value) return
   saving.value = true
   try {
-    project.value = await updateProject(id, values)
+    setProject(await updateProject(project.value.id, values))
     ui.toast({ message: 'Projeto atualizado com sucesso', variant: 'success' })
   } catch (err) {
     const code = isAxiosError(err) ? err.response?.data?.error?.code : undefined
@@ -89,9 +62,10 @@ async function onSubmit(values: ProjectPayload) {
 }
 
 async function onActivate() {
+  if (!project.value) return
   transitioning.value = true
   try {
-    project.value = await activateProject(id)
+    setProject(await activateProject(project.value.id))
     ui.toast({ message: 'Projeto ativado', variant: 'success' })
   } catch (err) {
     const code = isAxiosError(err) ? err.response?.data?.error?.code : undefined
@@ -108,9 +82,10 @@ async function onActivate() {
 }
 
 async function onCloseProject() {
+  if (!project.value) return
   transitioning.value = true
   try {
-    project.value = await closeProject(id)
+    setProject(await closeProject(project.value.id))
     ui.toast({ message: 'Projeto encerrado', variant: 'success' })
   } catch {
     ui.toast({ message: 'Erro ao encerrar o projeto.', variant: 'error' })
@@ -122,30 +97,9 @@ async function onCloseProject() {
 </script>
 
 <template>
-  <div v-if="loadingPage" class="flex justify-center py-16 text-gray-400 dark:text-gray-500">
-    <AppSpinner size="lg" />
-  </div>
-
-  <div v-else-if="project" class="mx-auto flex max-w-lg flex-col gap-4">
-    <nav class="text-sm text-gray-500 dark:text-gray-400">
-      <RouterLink to="/projects" class="hover:underline">Projetos</RouterLink>
-      <span> / {{ project.name }}</span>
-    </nav>
-
-    <div class="flex items-center gap-3">
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ project.name }}</h1>
-      <ProjectStatusBadge :status="project.status" />
-    </div>
-    <p v-if="project.startDate && project.endDate" class="-mt-2 text-sm text-gray-500 dark:text-gray-400">
-      Semestre de {{ formatDateBR(project.startDate) }} a {{ formatDateBR(project.endDate) }}
-    </p>
-
-    <div class="flex flex-wrap gap-2">
-      <AppButton variant="secondary" size="sm" @click="router.push(`/projects/${id}/turmas`)">Ver turmas</AppButton>
-      <AppButton variant="secondary" size="sm" @click="router.push(`/projects/${id}/allocation`)">Ver cronograma</AppButton>
-    </div>
-
+  <div v-if="project" class="flex max-w-lg flex-col gap-4">
     <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Dados do projeto</h2>
       <ProjectForm
         ref="formRef"
         :initial-values="initialValues"
@@ -160,11 +114,7 @@ async function onCloseProject() {
     </div>
 
     <div v-if="auth.isUser && project.status !== 'closed'" class="flex flex-wrap gap-3">
-      <AppButton
-        v-if="project.status === 'draft'"
-        :loading="transitioning"
-        @click="onActivate"
-      >
+      <AppButton v-if="project.status === 'draft'" :loading="transitioning" @click="onActivate">
         Ativar projeto
       </AppButton>
       <AppButton

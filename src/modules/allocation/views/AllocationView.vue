@@ -6,12 +6,10 @@ import AppButton from '@/shared/components/AppButton.vue'
 import AppSpinner from '@/shared/components/AppSpinner.vue'
 import AppEmptyState from '@/shared/components/AppEmptyState.vue'
 import AppConfirmDialog from '@/shared/components/AppConfirmDialog.vue'
-import ProjectStatusBadge from '@/modules/project/components/ProjectStatusBadge.vue'
 import AllocationModal from '../components/AllocationModal.vue'
 import ScheduleGrid from '../components/ScheduleGrid.vue'
 import WeekStrip from '../components/WeekStrip.vue'
 import { listAllocations, deleteAllocation } from '../services/allocation.service'
-import { getProject } from '@/modules/project/services/project.service'
 import { listTurmas } from '@/modules/turma/services/turma.service'
 import { listRooms } from '@/modules/room/services/room.service'
 import { listBuildings } from '@/modules/building/services/building.service'
@@ -24,9 +22,10 @@ import {
   todayISO,
   weekDates,
 } from '../helpers'
+import { useProjectContext } from '@/modules/project/projectContext'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
-import type { IProject, ITurma, IRoom, IBuilding, IAllocation } from '@/types'
+import type { ITurma, IRoom, IBuilding, IAllocation } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -34,7 +33,7 @@ const auth = useAuthStore()
 const ui = useUiStore()
 
 const projectId = route.params.projectId as string
-const project = ref<IProject | null>(null)
+const { project } = useProjectContext()
 const turmas = ref<ITurma[]>([])
 const rooms = ref<IRoom[]>([])
 const buildings = ref<IBuilding[]>([])
@@ -123,25 +122,20 @@ function initialDate(s: { startDate: string; endDate: string }): string {
 async function fetchAll() {
   loading.value = true
   try {
-    const [proj, turmaRes, roomRes, buildingRes, allocs] = await Promise.all([
-      getProject(projectId),
+    // o projeto vem do ProjectShell (já validado); aqui só os dados do cronograma
+    const [turmaRes, roomRes, buildingRes, allocs] = await Promise.all([
       listTurmas({ projectId, limit: 100 }),
       listRooms({ limit: 100 }),
       listBuildings({ limit: 100 }),
       listAllocations(projectId),
     ])
-    project.value = proj
     turmas.value = turmaRes.data
     rooms.value = roomRes.data
     buildings.value = buildingRes.data
     allocations.value = allocs
     if (semester.value) selectedDate.value = initialDate(semester.value)
   } catch (err) {
-    if (isAxiosError(err) && (err.response?.status === 404 || err.response?.status === 403)) {
-      ui.toast({ message: 'Projeto não encontrado ou sem acesso.', variant: 'error' })
-      router.push('/projects')
-      return
-    }
+    if (!isAxiosError(err)) throw err
     ui.toast({ message: 'Erro ao carregar o cronograma.', variant: 'error' })
   } finally {
     loading.value = false
@@ -250,26 +244,6 @@ async function confirmDelete() {
   </div>
 
   <div v-else-if="project" class="flex flex-col gap-4">
-    <nav class="text-sm text-gray-500 dark:text-gray-400">
-      <RouterLink to="/projects" class="hover:underline">Projetos</RouterLink>
-      <span> / </span>
-      <RouterLink :to="`/projects/${project.id}`" class="hover:underline">{{ project.name }}</RouterLink>
-      <span> / Cronograma</span>
-    </nav>
-
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="flex flex-col gap-0.5">
-        <div class="flex items-center gap-3">
-          <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Cronograma</h1>
-          <ProjectStatusBadge :status="project.status" />
-        </div>
-        <p v-if="semester" class="text-sm text-gray-500 dark:text-gray-400">
-          Semestre de {{ formatDateBR(semester.startDate) }} a {{ formatDateBR(semester.endDate) }}
-        </p>
-      </div>
-      <AppButton v-if="canManage && semester" @click="openCreate()">Adicionar evento</AppButton>
-    </div>
-
     <AppEmptyState
       v-if="!semester"
       title="Semestre sem datas"
@@ -311,13 +285,16 @@ async function confirmDelete() {
           :end-date="semester.endDate"
           :counts="countsForWeek"
         />
-        <select
-          v-model="selectedBuilding"
-          class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-        >
-          <option value="">Todos os prédios</option>
-          <option v-for="b in buildings" :key="b.id" :value="b.id">{{ b.name }}</option>
-        </select>
+        <div class="flex flex-wrap items-center gap-2">
+          <select
+            v-model="selectedBuilding"
+            class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          >
+            <option value="">Todos os prédios</option>
+            <option v-for="b in buildings" :key="b.id" :value="b.id">{{ b.name }}</option>
+          </select>
+          <AppButton v-if="canManage" @click="openCreate()">Adicionar evento</AppButton>
+        </div>
       </div>
 
       <AppEmptyState

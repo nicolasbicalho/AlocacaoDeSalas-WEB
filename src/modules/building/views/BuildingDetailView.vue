@@ -1,30 +1,21 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { isAxiosError } from 'axios'
 import BuildingForm from '../components/BuildingForm.vue'
 import AppButton from '@/shared/components/AppButton.vue'
-import AppSpinner from '@/shared/components/AppSpinner.vue'
-import AppBadge from '@/shared/components/AppBadge.vue'
 import AppConfirmDialog from '@/shared/components/AppConfirmDialog.vue'
-import {
-  getBuilding,
-  updateBuilding,
-  deactivateBuilding,
-  type BuildingPayload,
-} from '../services/building.service'
+import { updateBuilding, deactivateBuilding, type BuildingPayload } from '../services/building.service'
+import { useBuildingContext } from '../buildingContext'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
-import type { IBuilding } from '@/types'
 
-const route = useRoute()
+// aba "Dados" do BuildingShell: o prédio já vem carregado pelo contexto
 const router = useRouter()
 const auth = useAuthStore()
 const ui = useUiStore()
+const { building, setBuilding } = useBuildingContext()
 
-const id = route.params.id as string
-const building = ref<IBuilding | null>(null)
-const loadingPage = ref(true)
 const saving = ref(false)
 const deactivating = ref(false)
 const confirmOpen = ref(false)
@@ -42,30 +33,11 @@ const initialValues = computed(() =>
     : undefined,
 )
 
-onMounted(async () => {
-  try {
-    building.value = await getBuilding(id)
-  } catch (err) {
-    if (isAxiosError(err) && err.response?.status === 404) {
-      ui.toast({ message: 'Prédio não encontrado.', variant: 'error' })
-      router.push('/buildings')
-      return
-    }
-    if (isAxiosError(err) && err.response?.status === 403) {
-      ui.toast({ message: 'Você não tem acesso a este prédio.', variant: 'error' })
-      router.push('/buildings')
-      return
-    }
-    ui.toast({ message: 'Erro ao carregar o prédio.', variant: 'error' })
-  } finally {
-    loadingPage.value = false
-  }
-})
-
 async function onSubmit(values: BuildingPayload) {
+  if (!building.value) return
   saving.value = true
   try {
-    building.value = await updateBuilding(id, values)
+    setBuilding(await updateBuilding(building.value.id, values))
     ui.toast({ message: 'Prédio atualizado com sucesso', variant: 'success' })
   } catch (err) {
     if (isAxiosError(err) && err.response?.data?.error?.code === 'BUILDING_CODE_EXISTS') {
@@ -79,9 +51,10 @@ async function onSubmit(values: BuildingPayload) {
 }
 
 async function confirmDeactivate() {
+  if (!building.value) return
   deactivating.value = true
   try {
-    await deactivateBuilding(id)
+    await deactivateBuilding(building.value.id)
     ui.toast({ message: 'Prédio desativado', variant: 'success' })
     router.push('/buildings')
   } catch {
@@ -94,26 +67,9 @@ async function confirmDeactivate() {
 </script>
 
 <template>
-  <div v-if="loadingPage" class="flex justify-center py-16 text-gray-400 dark:text-gray-500">
-    <AppSpinner size="lg" />
-  </div>
-
-  <div v-else-if="building" class="mx-auto flex max-w-lg flex-col gap-4">
-    <nav class="text-sm text-gray-500 dark:text-gray-400">
-      <RouterLink to="/buildings" class="hover:underline">Prédios</RouterLink>
-      <span> / {{ building.name }}</span>
-    </nav>
-
-    <div class="flex items-center gap-3">
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ building.name }}</h1>
-      <AppBadge :variant="building.active ? 'success' : 'neutral'" :label="building.active ? 'Ativo' : 'Inativo'" />
-    </div>
-
-    <div class="flex">
-      <AppButton variant="secondary" size="sm" @click="router.push(`/buildings/${id}/rooms`)">Ver salas</AppButton>
-    </div>
-
+  <div v-if="building" class="flex max-w-lg flex-col gap-4">
     <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Dados do prédio</h2>
       <BuildingForm
         ref="formRef"
         :initial-values="initialValues"

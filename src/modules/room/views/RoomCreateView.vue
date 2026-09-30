@@ -13,6 +13,7 @@ const router = useRouter()
 const ui = useUiStore()
 
 const buildingId = route.params.buildingId as string
+const listPath = `/buildings/${buildingId}/rooms`
 const loading = ref(false)
 const formRef = ref<InstanceType<typeof RoomForm> | null>(null)
 
@@ -20,8 +21,9 @@ async function onSubmit(values: { name: string; code: string; capacity: number; 
   loading.value = true
   try {
     const room = await createRoom({ buildingId, ...values })
-    ui.toast({ message: 'Sala criada com sucesso', variant: 'success' })
-    router.push(`/rooms/${room.id}`)
+    ui.toast({ message: `Sala "${room.name}" criada`, variant: 'success' })
+    // volta para a aba Salas, onde a sala nova aparece na lista
+    router.push(listPath)
   } catch (err) {
     if (isAxiosError(err) && err.response?.data?.error?.code === 'ROOM_CODE_EXISTS') {
       formRef.value?.setServerError('code', 'Já existe uma sala com este código no prédio')
@@ -35,19 +37,12 @@ async function onSubmit(values: { name: string; code: string; capacity: number; 
 </script>
 
 <template>
-  <div class="mx-auto flex max-w-lg flex-col gap-4">
-    <nav class="text-sm text-gray-500 dark:text-gray-400">
-      <RouterLink to="/buildings" class="hover:underline">Prédios</RouterLink>
-      <span> / </span>
-      <RouterLink :to="`/buildings/${buildingId}/rooms`" class="hover:underline">Salas</RouterLink>
-      <span> / Nova sala</span>
-    </nav>
-    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Nova sala</h1>
-
+  <div class="flex max-w-lg flex-col gap-4">
     <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Nova sala</h2>
       <RoomForm ref="formRef" :loading="loading" submit-label="Criar sala" @submit="onSubmit">
         <template #actions>
-          <AppButton variant="secondary" type="button" :disabled="loading" @click="router.push(`/buildings/${buildingId}/rooms`)">
+          <AppButton variant="secondary" type="button" :disabled="loading" @click="router.push(listPath)">
             Cancelar
           </AppButton>
         </template>
