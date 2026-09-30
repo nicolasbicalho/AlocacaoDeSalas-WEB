@@ -48,7 +48,7 @@ let highlightTimer: ReturnType<typeof setTimeout> | undefined
 
 const modalOpen = ref(false)
 const editing = ref<IAllocation | null>(null)
-const prefill = ref<{ roomId?: string; date?: string; start?: string; end?: string } | null>(null)
+const prefill = ref<{ turmaId?: string; roomId?: string; date?: string; start?: string; end?: string } | null>(null)
 const confirmTarget = ref<IAllocation | null>(null)
 const deleting = ref(false)
 
@@ -148,7 +148,40 @@ async function fetchAll() {
   }
 }
 
-onMounted(fetchAll)
+const queryString = (v: unknown) => (typeof v === 'string' && v ? v : undefined)
+
+/**
+ * Deep link (ex.: vindo da página inicial):
+ * - `?event=<id>` → leva a grade até o evento único e o destaca
+ * - `?date=YYYY-MM-DD` → seleciona a data
+ * - `?turma=<id>&start=HH:MM&end=HH:MM` (+ date) → abre o modal para alocar aquele horário
+ * A query é limpa depois, para não reabrir o modal ao recarregar.
+ */
+async function applyDeepLink() {
+  const q = route.query
+  const s = semester.value
+  if (!s || Object.keys(q).length === 0) return
+
+  const target = allocations.value.find((a) => a.id === queryString(q.event))
+  const date = queryString(q.date)
+  if (target) {
+    await goToEvent(target)
+  } else if (date && date >= s.startDate && date <= s.endDate) {
+    selectedDate.value = firstSchoolDay(date, s.endDate)
+  }
+
+  const turmaId = queryString(q.turma)
+  if (turmaId && canManage.value) {
+    openCreate({ turmaId, start: queryString(q.start), end: queryString(q.end) })
+  }
+  router.replace({ query: {} })
+}
+
+onMounted(async () => {
+  await fetchAll()
+  await nextTick()
+  await applyDeepLink()
+})
 onBeforeUnmount(() => clearTimeout(highlightTimer))
 
 /** Leva a grade até o evento único: seleciona a data, mostra todos os prédios e destaca. */
@@ -165,7 +198,7 @@ async function goToEvent(a: IAllocation) {
   highlightTimer = setTimeout(() => (highlightId.value = null), 2200)
 }
 
-function openCreate(pf?: { roomId?: string; start?: string; end?: string }) {
+function openCreate(pf?: { turmaId?: string; roomId?: string; start?: string; end?: string }) {
   editing.value = null
   prefill.value = { date: selectedDate.value, ...pf }
   modalOpen.value = true

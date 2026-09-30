@@ -27,7 +27,7 @@ const props = defineProps<{
   /** quando presente, o modal edita/move este evento */
   editing?: IAllocation | null
   /** valores iniciais ao criar (ex.: clique numa célula livre da grade) */
-  prefill?: { roomId?: string; date?: string; start?: string; end?: string } | null
+  prefill?: { turmaId?: string; roomId?: string; date?: string; start?: string; end?: string } | null
 }>()
 
 const emit = defineEmits<{ saved: [IAllocation]; close: [] }>()
@@ -77,7 +77,8 @@ function resetFromProps() {
   const hasTurmas = props.turmas.length > 0
   type.value = hasTurmas ? 'weekly' : 'single'
   link.value = hasTurmas ? 'turma' : 'free'
-  turmaId.value = props.turmas[0]?.id ?? ''
+  turmaId.value =
+    p?.turmaId && props.turmas.some((t) => t.id === p.turmaId) ? p.turmaId : (props.turmas[0]?.id ?? '')
   title.value = ''
   roomId.value = p?.roomId ?? props.rooms[0]?.id ?? ''
   date.value = p?.date ?? props.semester.startDate
