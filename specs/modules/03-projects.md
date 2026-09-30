@@ -63,7 +63,9 @@ interface IProject {
 |------|------|-------|
 | `/projects` | `ProjectListView` | `admin`, `user` |
 | `/projects/new` | `ProjectCreateView` | `user` |
-| `/projects/:id` | `ProjectDetailView` | `admin`, `user` |
+| `/projects/:projectId` | `ProjectShell` → aba **Visão geral** (`ProjectDetailView`) | `admin`, `user` |
+
+O `ProjectShell` é o espaço de trabalho do projeto: breadcrumb, título, status, período e as abas **Visão geral · Turmas · Cronograma** (futuramente Relatórios). As abas são rotas filhas e recebem o projeto já carregado via `useProjectContext()` — ver [routing.md](../shared/routing.md#rotas-de-contexto-shells). Os antigos botões "Ver turmas" / "Ver cronograma" foram substituídos pelas abas.
 
 ---
 

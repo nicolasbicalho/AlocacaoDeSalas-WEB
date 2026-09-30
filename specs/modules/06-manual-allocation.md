@@ -69,7 +69,7 @@ interface IAllocation {
 
 | Path | View | Roles |
 |------|------|-------|
-| `/projects/:projectId/allocation` | `AllocationView` | `user` (edição), `admin` (leitura) |
+| `/projects/:projectId/allocation` | aba **Cronograma** do `ProjectShell` (`AllocationView`) | `user` (edição), `admin` (leitura) |
 
 Acesso a partir de `ProjectDetailView` pelo botão **"Ver cronograma"** e dos links da página inicial (Módulo 10).
 

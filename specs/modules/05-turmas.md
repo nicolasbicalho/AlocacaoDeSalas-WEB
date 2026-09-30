@@ -32,9 +32,12 @@ Os requisitos usam o componente compartilhado `FeatureCheckboxes` (`src/shared/c
 
 | Path | View | Roles |
 |------|------|-------|
-| `/projects/:projectId/turmas` | `TurmaListView` | `admin`, `user` |
-| `/projects/:projectId/turmas/new` | `TurmaCreateView` | `user` |
-| `/turmas/:id` | `TurmaDetailView` | `admin`, `user` |
+| `/projects/:projectId/turmas` | aba **Turmas** do `ProjectShell` (`TurmaListView`) | `admin`, `user` |
+| `/projects/:projectId/turmas/new` | `TurmaCreateView` (aba Turmas) | `user` |
+| `/projects/:projectId/turmas/:turmaId` | `TurmaDetailView` (aba Turmas) | `admin`, `user` |
+| `/turmas/:id` | redireciona para a rota aninhada (URL antiga) | `admin`, `user` |
+
+As telas de turma são abas do `ProjectShell` (breadcrumb `Projetos › {projeto} › Turmas › {turma}`). Criar/desativar turma volta para a aba Turmas.
 
 ---
 

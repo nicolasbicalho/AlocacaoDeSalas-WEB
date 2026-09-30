@@ -184,6 +184,36 @@ Diálogo de confirmação para ações destrutivas.
 
 ---
 
+## AppBreadcrumb
+
+Trilha de navegação. Todos os níveis são clicáveis, exceto o último (página atual, `aria-current="page"`). Separador `›`.
+
+**Props:**
+| Prop | Tipo | Default | Descrição |
+|------|------|---------|-----------|
+| `items` | `Crumb[]` | — | `{ label: string; to?: RouteLocationRaw }` — sem `to`, o item não é link |
+
+Os tipos `Crumb` e `ContextTab` ficam em `src/shared/components/navigation.ts`. Nas páginas dentro de um shell (projeto/prédio) o breadcrumb é montado pelo próprio shell — as views não o declaram.
+
+---
+
+## AppContextHeader
+
+Cabeçalho dos *shells* de contexto (`ProjectShell`, `BuildingShell`): breadcrumb, título, badge de status, metadado (ex.: período do semestre) e **abas** de seção.
+
+**Props:**
+| Prop | Tipo | Default | Descrição |
+|------|------|---------|-----------|
+| `title` | `string` | — | Nome da entidade |
+| `crumbs` | `Crumb[]` | — | Repassado ao `AppBreadcrumb` |
+| `tabs` | `ContextTab[]` | — | `{ label, to, active, count? }` — `count` mostra um contador ao lado do rótulo |
+
+**Slots:** `badge` (ex.: `ProjectStatusBadge`), `meta` (texto secundário ao lado do título).
+
+As abas são `RouterLink` com `aria-current="page"` na ativa; rolam horizontalmente em telas estreitas.
+
+---
+
 ## FeatureCheckboxes
 
 Grupo de checkboxes com as **características fixas de sala** (`ROOM_FEATURES`). Usado no `RoomForm` (características que a sala possui — `features`) e no `TurmaForm` (características exigidas — `requiredFeatures`). Substitui os antigos `RoomAttributesEditor` e `RequiredAttributesEditor`.

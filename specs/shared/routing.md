@@ -25,15 +25,43 @@
 
 /projects                 → ProjectListView (AppLayout) — roles: admin, user
 /projects/new             → ProjectCreateView (AppLayout) — roles: user
-/projects/:id             → ProjectDetailView (AppLayout) — roles: admin, user
-/projects/:id/upload      → DataUploadView (AppLayout) — roles: user
-/projects/:projectId/allocation → AllocationView (AppLayout) — roles: admin (leitura), user
-/projects/:id/reports     → ReportView (AppLayout) — roles: user
+/projects/:projectId      → ProjectShell (cabeçalho + abas) — roles: admin, user
+    ''                    → ProjectDetailView   [aba Visão geral]
+    turmas                → TurmaListView       [aba Turmas]
+    turmas/new            → TurmaCreateView     [aba Turmas] — roles: user
+    turmas/:turmaId       → TurmaDetailView     [aba Turmas]
+    allocation            → AllocationView      [aba Cronograma] — edição só user
+    reports               → ReportView          [aba Relatórios] — planejado (módulo 08)
+
+/buildings                → BuildingListView (AppLayout) — roles: admin, user
+/buildings/new            → BuildingCreateView (AppLayout) — roles: user
+/buildings/:buildingId    → BuildingShell (cabeçalho + abas) — roles: admin, user
+    ''                    → BuildingDetailView  [aba Dados]
+    rooms                 → RoomListView        [aba Salas]
+    rooms/new             → RoomCreateView      [aba Salas] — roles: user
+    rooms/:roomId         → RoomDetailView      [aba Salas]
+
+/turmas/:id               → redireciona para /projects/:projectId/turmas/:id   (URL antiga)
+/rooms/:id                → redireciona para /buildings/:buildingId/rooms/:id  (URL antiga)
 
 /audit                    → AuditLogView (AppLayout) — roles: admin
 ```
 
 > O link **"Auditoria"** (`/audit`) aparece no menu superior do `AppLayout` somente para `admin` — ver [09-audit.md](../modules/09-audit.md).
+
+### Rotas de contexto (shells)
+
+Projeto e prédio são **espaços de trabalho**: a rota pai (`/projects/:projectId`, `/buildings/:buildingId`) renderiza um *shell* com breadcrumb, título, status e **abas**, e as páginas internas são rotas filhas renderizadas no `<RouterView>` do shell.
+
+- O shell carrega a entidade **uma vez** e a entrega às abas por `provide/inject` (`useProjectContext()` / `useBuildingContext()`); as abas não refazem essa busca e atualizam o cabeçalho ao salvar (`setProject` / `setBuilding`). Existência e acesso (404/403) são tratados só no shell.
+- Cada rota filha declara em `meta` a aba ativa (`section`: `overview` | `turmas` | `allocation` | `rooms`) e, se for folha, o tipo (`leaf`: `new` | `detail`). O shell monta o breadcrumb a partir disso; páginas de detalhe informam o próprio nome via `leafLabel`.
+- As abas mostram contadores (turmas do projeto, salas do prédio), recarregados a cada navegação dentro do shell.
+- O `meta` das filhas é mesclado com o do pai: `roles` e `layout` vêm do shell, e as páginas `new` restringem a `user`.
+- Criar/desativar uma turma ou sala **volta para a aba da lista**; salvar edições permanece na página com um toast.
+
+### Menu superior
+
+O item ativo do menu é calculado por **prefixo de caminho** (ex.: qualquer rota sob `/projects/…` destaca "Projetos"), não pelo `active-class` do `RouterLink` — que só considera o registro de rota exato e perderia o destaque dentro dos shells.
 
 ---
 

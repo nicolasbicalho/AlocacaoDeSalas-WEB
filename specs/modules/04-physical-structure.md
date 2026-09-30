@@ -41,10 +41,13 @@ shared/components/
 |------|------|-------|
 | `/buildings` | `BuildingListView` | `admin`, `user` |
 | `/buildings/new` | `BuildingCreateView` | `user` |
-| `/buildings/:id` | `BuildingDetailView` | `admin`, `user` |
-| `/buildings/:buildingId/rooms` | `RoomListView` | `admin`, `user` |
-| `/buildings/:buildingId/rooms/new` | `RoomCreateView` | `user` |
-| `/rooms/:id` | `RoomDetailView` | `admin`, `user` |
+| `/buildings/:buildingId` | `BuildingShell` → aba **Dados** (`BuildingDetailView`) | `admin`, `user` |
+| `/buildings/:buildingId/rooms` | aba **Salas** (`RoomListView`) | `admin`, `user` |
+| `/buildings/:buildingId/rooms/new` | `RoomCreateView` (aba Salas) | `user` |
+| `/buildings/:buildingId/rooms/:roomId` | `RoomDetailView` (aba Salas) | `admin`, `user` |
+| `/rooms/:id` | redireciona para a rota aninhada (URL antiga) | `admin`, `user` |
+
+O `BuildingShell` mostra breadcrumb, nome, status, código e as abas **Dados · Salas** (com contador). Criar/desativar sala volta para a aba Salas. Ver [routing.md](../shared/routing.md#rotas-de-contexto-shells).
 
 Salas são listadas e criadas a partir do prédio (rota aninhada por `buildingId`).
 
