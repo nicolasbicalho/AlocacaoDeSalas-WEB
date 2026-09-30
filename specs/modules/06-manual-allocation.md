@@ -71,7 +71,17 @@ interface IAllocation {
 |------|------|-------|
 | `/projects/:projectId/allocation` | `AllocationView` | `user` (edição), `admin` (leitura) |
 
-Acesso a partir de `ProjectDetailView` pelo botão **"Ver cronograma"**.
+Acesso a partir de `ProjectDetailView` pelo botão **"Ver cronograma"** e dos links da página inicial (Módulo 10).
+
+### Deep link (query params)
+
+| Param | Efeito |
+|-------|--------|
+| `event=<id>` | leva a grade até o evento único (data dele, todos os prédios) e o destaca |
+| `date=YYYY-MM-DD` | seleciona a data (se estiver no semestre) |
+| `turma=<id>&start=HH:MM&end=HH:MM` | abre o modal de criação já com turma, dia da semana (da data) e horário — só para `user` |
+
+A query é lida uma vez ao carregar e depois limpa da URL (recarregar não reabre o modal).
 
 ---
 

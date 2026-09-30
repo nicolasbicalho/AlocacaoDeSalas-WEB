@@ -26,6 +26,7 @@ Este diretório contém todas as especificações do projeto frontend seguindo o
 | 6 | Alocação Manual e Cronograma | [06-manual-allocation.md](./modules/06-manual-allocation.md) | `implemented` |
 | 7 | Alocação Automática | [07-auto-allocation.md](./modules/07-auto-allocation.md) | `draft` |
 | 9 | Auditoria (transversal) | [09-audit.md](./modules/09-audit.md) | `implemented` |
+| 10 | Página Inicial (Dashboard) | [10-dashboard.md](./modules/10-dashboard.md) | `implemented` |
 <!-- | 8 | Relatórios e Exportação | [08-reports.md](./modules/08-reports.md) | `draft` | -->
 
 ## Status Possíveis
@@ -53,6 +54,8 @@ Este diretório contém todas as especificações do projeto frontend seguindo o
 Cada módulo depende dos anteriores — não implementar fora de ordem.
 
 > **Exceção — 09-audit:** módulo **transversal** (consulta, pelo `admin`, os registros de todos os módulos; depende apenas de 01-auth). Por isso foi implementado **antes** de 07-auto-allocation e 08-reports.
+>
+> **10-dashboard:** página inicial que só compõe dados de 03, 05, 06 e 09 (sem API própria); implementada logo após eles e evolui junto com 07/08.
 
 ## Relação com a API
 

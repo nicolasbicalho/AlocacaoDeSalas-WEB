@@ -112,7 +112,7 @@ Executado após `authGuard`. Se `meta.roles` está definido e o role do usuário
 | `admin` | `/dashboard` |
 | `user` | `/dashboard` |
 
-> Por ora todos os roles convergem para `/dashboard`. Conforme os módulos (users, projects, ...) forem implementados, os destinos podem ser especializados por role.
+> Todos os roles convergem para `/dashboard`, que exibe um painel diferente por role (ver [Módulo 10 — Dashboard](../modules/10-dashboard.md)).
 
 ### Redirect após login
 
