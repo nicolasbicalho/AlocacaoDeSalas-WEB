@@ -181,3 +181,25 @@ Diálogo de confirmação para ações destrutivas.
 | `variant` | `'danger' \| 'warning'` | Estilo do botão de confirmação |
 
 **Emits:** `confirm`, `cancel`
+
+---
+
+## FeatureCheckboxes
+
+Grupo de checkboxes com as **características fixas de sala** (`ROOM_FEATURES`). Usado no `RoomForm` (características que a sala possui — `features`) e no `TurmaForm` (características exigidas — `requiredFeatures`). Substitui os antigos `RoomAttributesEditor` e `RequiredAttributesEditor`.
+
+> Exceção ao prefixo `App`: conhece a lista fixa de características do domínio, mas continua **puro** (sem HTTP nem store).
+
+**Opções (valor → rótulo):** `projetor` Projetor · `ar_condicionado` Ar-condicionado · `acessibilidade` Acessibilidade (PcD) · `computadores` Computadores (lab. de informática) · `som` Sistema de som · `bancadas` Bancadas (lab. experimental)
+
+**Props:**
+| Prop | Tipo | Default | Descrição |
+|------|------|---------|-----------|
+| `modelValue` | `RoomFeature[]` | — | Características marcadas (v-model), sem repetição, na ordem do catálogo |
+| `label` | `string` | — | Legenda do grupo (ex.: "Características", "Requisitos de sala") |
+| `hint` | `string` | — | Texto de ajuda abaixo da legenda (opcional) |
+| `readonly` | `boolean` | `false` | Somente leitura (ex.: `admin`) |
+
+O catálogo com os rótulos fica em `src/shared/constants/roomFeatures.ts` (`ROOM_FEATURES`, `featureLabel()`), espelhando `ROOM_FEATURES` da API.
+
+**Emits:** `update:modelValue`

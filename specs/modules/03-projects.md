@@ -12,6 +12,8 @@ Um **Projeto** representa um ciclo de alocação correspondente a um semestre ou
 
 O `user` cria e opera projetos. O `admin` visualiza (leitura). Apenas um projeto pode estar com status `active` por instituto.
 
+Cada projeto tem as **datas reais do semestre** (início e término), que delimitam o calendário do cronograma ([Módulo 6](./06-manual-allocation.md)).
+
 ---
 
 ## Estrutura do Módulo
@@ -46,6 +48,8 @@ interface IProject {
   semester: string      // ex: "2025.2"
   instituteId: string
   status: ProjectStatus
+  startDate: string     // 'YYYY-MM-DD' — início do semestre
+  endDate: string       // 'YYYY-MM-DD' — término do semestre
   createdAt: string
   updatedAt: string
 }
@@ -74,7 +78,7 @@ interface IProject {
 
 ### `ProjectCard`
 
-Exibe: nome do projeto, semestre, status (`ProjectStatusBadge`), data de criação, botão "Abrir".
+Exibe: nome do projeto, semestre, **período** (data de início – data de término), status (`ProjectStatusBadge`), data de criação, botão "Abrir".
 
 ### Comportamento
 
@@ -106,17 +110,20 @@ GET /projects?status=...&page=1&limit=20
 |-------|------|-----------|
 | `name` | text | obrigatório, mín. 3 caracteres (ex: "2025/2") |
 | `semester` | text | obrigatório, formato `YYYY.N` (ex: "2025.2") |
+| `startDate` ("Data de início") | date | obrigatório |
+| `endDate` ("Data de término") | date | obrigatório, posterior à data de início, período de até 366 dias |
 
 ### Comportamento
 
 1. Sucesso: redireciona para `/projects/:id` do projeto criado
 2. Erro `PROJECT_SEMESTER_EXISTS`: exibe erro inline no campo `semester`
+3. Erro de validação das datas (`VALIDATION_ERROR`): exibe erro inline no campo de data
 
 ### Chamada à API
 
 ```
 POST /projects
-Body: { name, semester }
+Body: { name, semester, startDate, endDate }
 ```
 
 ---
@@ -125,9 +132,10 @@ Body: { name, semester }
 
 ### Layout
 
-- Header com nome do projeto, `ProjectStatusBadge` e menu de ações
+- Header com nome do projeto, `ProjectStatusBadge`, **período do semestre** e menu de ações
 - Tabs de navegação: "Visão Geral" | "Dados" | "Alocação" | "Relatórios"
 - Cada tab corresponde a uma sub-seção ou redireciona para a view específica
+- Edição (`user`, projeto não encerrado): `ProjectForm` com os mesmos campos da criação, incluindo "Data de início" e "Data de término"
 
 ### Ações disponíveis por status
 
@@ -144,11 +152,13 @@ Body: { name, semester }
 1. Ao montar, carrega o projeto e armazena em `projectStore.currentProject`
 2. "Ativar projeto": abre confirmação; chama `PATCH /projects/:id/activate`
 3. "Encerrar projeto": abre confirmação com variante `warning`; chama `PATCH /projects/:id/close`
+4. Salvar edição: chama `PUT /projects/:id`; erro `PROJECT_DATES_CONFLICT` (há evento único fora do novo período) é exibido ao usuário e o projeto não é alterado
 
 ### Chamadas à API
 
 ```
 GET /projects/:id
+PUT /projects/:id            Body: { name?, semester?, startDate?, endDate? }
 PATCH /projects/:id/activate
 PATCH /projects/:id/close
 ```
@@ -163,3 +173,6 @@ PATCH /projects/:id/close
 - [x] Projeto criado começa com status `draft`
 - [x] Projeto ativado exibe badge "Ativo"
 - [x] Projeto encerrado não pode mais ser editado
+- [x] Formulário de criação/edição tem "Data de início" e "Data de término" (input date), obrigatórias na criação
+- [x] Card e detalhe do projeto exibem o período do semestre
+- [x] `PROJECT_DATES_CONFLICT` na edição é exibido ao usuário

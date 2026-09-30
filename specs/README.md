@@ -24,8 +24,9 @@ Este diretório contém todas as especificações do projeto frontend seguindo o
 | 4 | Estrutura Física (Prédios e Salas) | [04-physical-structure.md](./modules/04-physical-structure.md) | `implemented` |
 | 5 | Gerenciamento de Turmas | [05-turmas.md](./modules/05-turmas.md) | `implemented` |
 | 6 | Alocação Manual e Cronograma | [06-manual-allocation.md](./modules/06-manual-allocation.md) | `implemented` |
-<!-- | 7 | Alocação Automática | [07-auto-allocation.md](./modules/07-auto-allocation.md) | `draft` |
-| 8 | Relatórios e Exportação | [08-reports.md](./modules/08-reports.md) | `draft` | -->
+| 7 | Alocação Automática | [07-auto-allocation.md](./modules/07-auto-allocation.md) | `draft` |
+| 9 | Auditoria (transversal) | [09-audit.md](./modules/09-audit.md) | `implemented` |
+<!-- | 8 | Relatórios e Exportação | [08-reports.md](./modules/08-reports.md) | `draft` | -->
 
 ## Status Possíveis
 - `draft` — em elaboração, não pronto para implementação
@@ -46,10 +47,12 @@ Este diretório contém todas as especificações do projeto frontend seguindo o
 ## Ordem de Implementação Recomendada
 
 ```
-01-auth → 02-institutes → 03-projects → 04-physical-structure → 05-turmas → 06-manual-allocation → 07-auto-allocation → 08-reports
+01-auth → 02-institutes → 03-projects → 04-physical-structure → 05-turmas → 06-manual-allocation → 09-audit → 07-auto-allocation → 08-reports
 ```
 
 Cada módulo depende dos anteriores — não implementar fora de ordem.
+
+> **Exceção — 09-audit:** módulo **transversal** (consulta, pelo `admin`, os registros de todos os módulos; depende apenas de 01-auth). Por isso foi implementado **antes** de 07-auto-allocation e 08-reports.
 
 ## Relação com a API
 

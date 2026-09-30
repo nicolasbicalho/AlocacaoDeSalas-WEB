@@ -2,23 +2,33 @@
 
 **Status:** `draft`
 **Depende de:** Módulo 6 (Alocação Manual e Cronograma)
-**API correspondente:** `AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md` (a ser criado)
+**API correspondente:** [`AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md`](../../../AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md)
 
-> **Ordem de desenvolvimento:** implementado **após** a alocação manual (Módulo 6). Reutiliza a entidade de **utilização** e a visão de **cronograma** definidas lá — aqui um algoritmo as gera em lote.
+> **Ordem de desenvolvimento:** implementado **após** a alocação manual (Módulo 6). Reutiliza a entidade **evento** e a visão de **cronograma** definidas lá — aqui um algoritmo gera eventos em lote.
 
 ---
 
 ## Visão Geral
 
-O `user` executa a alocação automática de turmas em salas dentro de um projeto ativo. O **processamento automático gera o cronograma completo do projeto** — todas as utilizações de salas ao longo do semestre inteiro — sem conflitos de horário, respeitando capacidade, atributos/recursos de sala e distância entre prédios.
+O `user` executa a alocação automática de turmas em salas dentro de um projeto ativo. O **processamento automático preenche o cronograma do semestre** — gera os **eventos recorrentes** das turmas nos horários da `schedule` que ainda não têm sala — sem conflitos de horário e respeitando os eventos já lançados manualmente. Eventos **únicos** são sempre manuais.
 
-O resultado popula a mesma grade do Módulo 6. Depois de gerado, o cronograma pode ser refinado manualmente (mover, trocar, remover ou adicionar utilizações). A tela exibe o progresso da execução e as turmas não alocadas (se existirem).
+O resultado popula a mesma grade do Módulo 6. Depois de gerado, o cronograma pode ser refinado manualmente (mover, remover ou adicionar eventos). A tela exibe o progresso da execução e as turmas não alocadas (se existirem).
 
-Critérios considerados pelo algoritmo (ver Módulo 4 — Estrutura Física):
-1. Tamanho da turma × capacidade da sala
-2. Atributos/recursos exigidos pela turma × atributos da sala
-3. Acessibilidade da sala
-4. Aulas consecutivas de um mesmo professor na mesma sala / prédios próximos
+Critérios do algoritmo (detalhados na [API 07](../../../AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md)):
+
+**Restrições obrigatórias:**
+- Sem conflito de sala e sem conflito de turma
+- Capacidade: `capacity >= studentCount`
+- Requisitos: características da sala incluem as exigidas pela turma (`features ⊇ requiredFeatures`)
+- Manual primeiro: eventos lançados manualmente são mantidos; o automático preenche o restante
+- Só gera eventos recorrentes de turmas
+
+**Preferências, por prioridade:**
+1. **Evitar desperdício** — a sala de menor capacidade que comporte a turma (best fit)
+2. **Requisitos** — verificados como filtro de salas (restrição acima), não como pontuação
+3. **Menor deslocamento** — turmas do mesmo período (mesmo grupo de alunos) em horários próximos não devem percorrer grandes distâncias (distância entre prédios por latitude/longitude). Depende de um campo futuro na turma (ex.: `period`), ainda não implementado.
+
+**Desempate:** mesma turma/professor em horários consecutivos prefere a mesma sala/prédio.
 
 ---
 
@@ -53,7 +63,7 @@ Visível apenas para `user`.
 
 - Status atual: "Não executada" | "Em andamento" | "Concluída"
 - Botão "Gerar cronograma automático" (desabilitado se o projeto não tem turmas/salas)
-- Botão "Re-executar" após a primeira geração (abre confirmação — sobrescreve o cronograma anterior)
+- Botão "Re-executar" após a primeira geração (abre confirmação — refaz os eventos gerados automaticamente; eventos manuais são mantidos)
 
 ### Comportamento
 
@@ -93,10 +103,17 @@ Response de `/run`:
 
 ## Critérios de Aceitação
 
-- [ ] Alocação automática gera o cronograma do semestre e popula a grade
+- [ ] Alocação automática gera os eventos recorrentes do semestre e popula a grade
+- [ ] Eventos lançados manualmente permanecem inalterados após a execução
 - [ ] Estatísticas de ocupação são exibidas corretamente
 - [ ] Turmas não alocadas são listadas com o motivo
-- [ ] Re-executar solicita confirmação antes de sobrescrever
+- [ ] Re-executar solicita confirmação antes de refazer os eventos automáticos
 - [ ] Após a geração, o cronograma pode ser ajustado manualmente (Módulo 6)
 - [ ] `admin` vê o cronograma em somente leitura (sem painel de execução)
-- [ ] Grade suporta filtro por prédio e dia da semana
+- [ ] Grade suporta filtro por prédio e navegação por data (Módulo 6)
+
+---
+
+## Questões em aberto
+- Re-execução sem apagar eventos manuais exige distinguir eventos automáticos dos manuais na API — ver [API 07 — Questões em aberto](../../../AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md#questões-em-aberto).
+- Campo de período/curso da turma (pré-requisito do critério de menor deslocamento) — ainda não implementado.

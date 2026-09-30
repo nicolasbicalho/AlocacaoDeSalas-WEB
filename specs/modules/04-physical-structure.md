@@ -8,7 +8,7 @@
 
 ## Visão Geral
 
-Telas para o `user` cadastrar e gerenciar **prédios** e **salas** do seu instituto — os dados que alimentam a alocação automática. As salas têm características **flexíveis** (chave-valor), com um editor dinâmico de atributos. O `admin` visualiza (somente leitura).
+Telas para o `user` cadastrar e gerenciar **prédios** e **salas** do seu instituto — os dados que alimentam a alocação automática. As salas têm **características fixas** (lista `ROOM_FEATURES`), marcadas por checkboxes (`FeatureCheckboxes`). O `admin` visualiza (somente leitura).
 
 Fase 1: cadastro manual (CRUD). Upload em massa (CSV/XLSX): fase 2.
 
@@ -25,9 +25,12 @@ modules/building/
 
 modules/room/
 ├── views/        # RoomListView, RoomCreateView, RoomDetailView
-├── components/   # RoomForm, RoomAttributesEditor
+├── components/   # RoomForm
 ├── services/room.service.ts
 └── index.ts
+
+shared/components/
+└── FeatureCheckboxes.vue   # checkboxes das características (compartilhado com Turmas)
 ```
 
 ---
@@ -56,27 +59,35 @@ Salas são listadas e criadas a partir do prédio (rota aninhada por `buildingId
 
 ## 4.2 Salas
 
-- **Lista (por prédio)**: tabela (Nome, Código, Capacidade, nº de atributos, Status, Ações), "Nova sala" (`user`).
-- **Form (`RoomForm`)**: nome, código, capacidade + **`RoomAttributesEditor`**.
+- **Lista (por prédio)**: tabela (Nome, Código, Capacidade, Características, Status, Ações), "Nova sala" (`user`). A coluna Características mostra os rótulos das características da sala.
+- **Form (`RoomForm`)**: nome, código, capacidade + **`FeatureCheckboxes`** (características da sala).
 - **Detalhe**: edição/desativação (`user`), somente leitura (`admin`).
 - **Erros inline**: `ROOM_CODE_EXISTS` → campo código.
 
-### `RoomAttributesEditor`
+### Características (`FeatureCheckboxes`)
 
-Editor de lista dinâmica de características. Cada linha = `{ key, value }`:
-- Campo `key` (slug da característica, ex.: `projector`, `accessible`, `computers`).
-- Seletor de tipo do valor: **texto** / **número** / **sim-não** — refletindo `string | number | boolean`.
-- Campo `value` conforme o tipo.
-- Botões adicionar/remover linha. Valida chave não vazia e única.
+Componente compartilhado (ver [ui-components.md](../shared/ui-components.md#featurecheckboxes)) com as 6 opções fixas de `ROOM_FEATURES`:
 
-O componente emite a lista de atributos para o `RoomForm`, que a envia no payload.
+| Valor | Rótulo |
+|-------|--------|
+| `projetor` | Projetor |
+| `ar_condicionado` | Ar-condicionado |
+| `acessibilidade` | Acessibilidade (PcD) |
+| `computadores` | Computadores (lab. de informática) |
+| `som` | Sistema de som |
+| `bancadas` | Bancadas (lab. experimental) |
+
+O `RoomForm` envia a seleção como `features: RoomFeature[]` no payload. Substitui o antigo `RoomAttributesEditor` (chave-valor), que deixou de existir.
+
+> **Migração (dev):** salas antigas com `attributes` são convertidas para `features` na API pelo script `AlocacaoDeSalas-API/scripts/migrations/001-dates-features-events.js`.
 
 ---
 
 ## Critérios de Aceitação
 
 - [x] `user` cria/edita/desativa prédios e salas do seu instituto
-- [x] O editor de atributos permite adicionar N características com tipos variados (texto/número/sim-não)
+- [x] O form de sala marca as características por checkboxes (6 opções fixas)
+- [x] A lista de salas mostra as características de cada sala
 - [x] `admin` vê prédios e salas em somente leitura
 - [x] Código duplicado (prédio ou sala) exibe erro inline no campo correto
 - [x] Salas são acessadas a partir do prédio (rota aninhada)

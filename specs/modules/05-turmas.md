@@ -8,7 +8,7 @@
 
 ## Visão Geral
 
-Telas para o `user` cadastrar as **turmas** de um projeto — o insumo que, junto com as salas, alimenta a alocação automática. Cada turma tem tamanho, professor, **requisitos** (características que a sala precisa ter) e uma **grade de horários semanais**. `admin` visualiza (somente leitura).
+Telas para o `user` cadastrar as **turmas** de um projeto — o insumo que, junto com as salas, alimenta a alocação automática. Cada turma tem tamanho, professor, **requisitos** (características que a sala precisa ter, da mesma lista fixa das salas) e uma **grade de horários semanais**. `admin` visualiza (somente leitura).
 
 Turmas são acessadas **a partir do projeto** (rota aninhada por `projectId`).
 
@@ -19,10 +19,12 @@ Turmas são acessadas **a partir do projeto** (rota aninhada por `projectId`).
 ```
 modules/turma/
 ├── views/        # TurmaListView, TurmaCreateView, TurmaDetailView
-├── components/   # TurmaForm, ScheduleEditor, RequiredAttributesEditor
+├── components/   # TurmaForm, ScheduleEditor
 ├── services/turma.service.ts
 └── index.ts
 ```
+
+Os requisitos usam o componente compartilhado `FeatureCheckboxes` (`src/shared/components/`), o mesmo das salas.
 
 ---
 
@@ -41,7 +43,7 @@ Tabela: Nome, Código, Nº alunos, Professor, Nº horários, Status, Ações (Ve
 
 ## 5.2 Form (`TurmaForm`)
 - Campos: nome, código (opcional), nº de alunos, professor.
-- **`RequiredAttributesEditor`**: lista de chaves de característica exigidas (ex.: `projector`, `accessible`) — entrada por tags/lista; idealmente sugere chaves já usadas nas salas do instituto.
+- **Requisitos (`FeatureCheckboxes`)**: checkboxes com as 6 características fixas (`ROOM_FEATURES`); a seleção é enviada como `requiredFeatures: RoomFeature[]`. A turma só cabe em salas cujas características incluam todas as exigidas (`sala.features ⊇ turma.requiredFeatures`).
 - **`ScheduleEditor`**: linhas dinâmicas de horário — seletor de dia (Seg–Sáb) + hora início + hora fim; adicionar/remover; valida `fim > início`.
 - Erros inline: `TURMA_CODE_EXISTS` → campo código.
 
@@ -51,15 +53,16 @@ Tabela: Nome, Código, Nº alunos, Professor, Nº horários, Status, Ações (Ve
 ### `ScheduleEditor`
 Cada linha = `{ day, start, end }`. `day`: select Seg/Ter/Qua/Qui/Sex/Sáb (mapeando para `mon`..`sat`). `start`/`end`: inputs `time` (`HH:MM`). Emite a lista para o `TurmaForm`.
 
-### `RequiredAttributesEditor`
-Lista de chaves (strings) que a sala deve ter. Entrada simples (campo + adicionar, chips removíveis). Chaves únicas.
+O antigo `RequiredAttributesEditor` (chaves livres por chips) deixou de existir.
+
+> **Migração (dev):** turmas antigas com `requiredAttributes` são convertidas para `requiredFeatures` na API pelo script `AlocacaoDeSalas-API/scripts/migrations/001-dates-features-events.js`.
 
 ---
 
 ## Critérios de Aceitação
 - [x] `user` cria/edita/desativa turmas de um projeto do seu instituto
 - [x] Editor de horários permite N faixas por semana com validação de `fim > início`
-- [x] Editor de requisitos permite N chaves de característica
+- [x] Requisitos são marcados por checkboxes com as 6 características fixas
 - [x] `admin` vê em somente leitura
 - [x] Código duplicado no projeto exibe erro inline
 - [x] Turmas são acessadas a partir do projeto (rota aninhada)
@@ -67,4 +70,5 @@ Lista de chaves (strings) que a sala deve ter. Entrada simples (campo + adiciona
 ---
 
 ## Questões em aberto / Evolução futura
-- **Eventos avulsos sem turma:** expandir o conceito de turma para permitir inserir eventos únicos (palestras, defesas, reuniões) no cronograma sem precisar cadastrar uma turma. Ver [Alocação Manual — Questões em aberto](./06-manual-allocation.md).
+- ~~**Eventos avulsos sem turma**~~ — **RESOLVIDA (implementada).** O cronograma aceita **eventos únicos de texto livre** (palestras, defesas, reuniões) sem cadastrar turma; o conceito de turma não mudou. Ver [Alocação Manual](./06-manual-allocation.md).
+- **Período/curso da turma:** campo futuro (ex.: `period`), ainda não implementado, necessário para o critério de menor deslocamento da [alocação automática](./07-auto-allocation.md).

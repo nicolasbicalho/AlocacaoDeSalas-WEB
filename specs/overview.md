@@ -24,23 +24,27 @@ Cada rota do frontend verifica o role do usuário autenticado. Tentativa de aces
 | Termo | Definição |
 |-------|-----------|
 | **Instituto** | Unidade organizacional gestora; dono dos prédios e agrupa os usuários (gerentes) |
-| **Projeto** | Ciclo de alocação de um semestre/período letivo |
+| **Projeto** | Ciclo de alocação de um semestre/período letivo, com data de início e de término |
 | **Prédio** | Estrutura física pertencente a um instituto |
-| **Sala** | Espaço físico dentro de um prédio (capacidade, atributos/recursos) |
-| **Turma** | Grupo de alunos em uma disciplina com professor e grade de horários |
+| **Sala** | Espaço físico dentro de um prédio (capacidade e características) |
+| **Características** | Lista fixa marcada por checkboxes: Projetor, Ar-condicionado, Acessibilidade (PcD), Computadores, Sistema de som, Bancadas. A sala marca as que tem; a turma, as que exige |
+| **Turma** | Grupo de alunos em uma disciplina com professor, requisitos de sala e grade de horários |
 | **Alocação** | Ato de atribuir uma turma a uma sala em um horário (manual ou automática) |
-| **Utilização** | Unidade do cronograma: uma turma ocupando uma sala em um horário (semanal ou de dia único) |
-| **Cronograma** | Calendário completo das utilizações de salas de um projeto ao longo do semestre |
-| **Conflito** | Duas turmas na mesma sala no mesmo horário |
+| **Evento** | Unidade do cronograma (antes "utilização"): uma sala ocupada em um horário — recorrente ou único |
+| **Evento recorrente** | Evento de uma turma que se repete toda semana no mesmo dia/horário, durante o período do projeto |
+| **Evento único** | Evento em uma data do semestre: de uma turma (ex.: reposição) ou de texto livre (ex.: palestra), com cor escolhida |
+| **Cronograma** | Calendário completo dos eventos de salas de um projeto ao longo do semestre |
+| **Conflito** | Dois eventos na mesma sala no mesmo horário, ou uma turma em dois lugares ao mesmo tempo |
 | **Restrição** | Regra que condiciona uma alocação |
+| **Auditoria** | Registro de quem fez o quê e quando (alterações e logins), consultado pelo `admin` em `/audit` |
 
-## Cronograma / Calendário de Utilizações
+## Cronograma / Calendário de Eventos
 
-A alocação monta um **calendário de utilizações** de salas ao longo de todo o semestre de um projeto. Uma *utilização* é uma turma ocupando uma sala em um horário — podendo se repetir semanalmente ou ocorrer em um único dia.
+A alocação monta um **calendário de eventos** de salas ao longo de todo o semestre de um projeto, entre as **datas reais** de início e término. Um *evento* é **recorrente** (turma, toda semana) ou **único** (uma data; turma ou texto livre).
 
-- O **processamento automático** gera o cronograma completo do projeto, com todas as utilizações do semestre inteiro.
-- O usuário pode **visualizar o cronograma de cada sala** (ocupado × livre).
-- O usuário pode **escolher um horário disponível** em qualquer sala e **adicionar uma utilização manualmente** — mesmo que apenas por um dia.
+- O **processamento automático** gera os eventos recorrentes das turmas para o semestre inteiro, respeitando os eventos manuais.
+- O usuário navega pelo cronograma **por data** (semana a semana, dentro do semestre) e vê a grade sala × hora do dia (ocupado × livre).
+- O usuário pode **escolher um horário disponível** em qualquer sala e **adicionar um evento manualmente** — recorrente ou único.
 
 A alocação **manual** (telas base do cronograma) é entregue antes da **automática**.
 
@@ -50,12 +54,13 @@ A alocação **manual** (telas base do cronograma) é entregue antes da **autom�
 1. Usuário acessa /login → autentica com e-mail e senha
 2. Admin cria institutos em /institutes
 3. Admin cria usuários em /users
-4. Usuário acessa /projects → cria um projeto (ex: "2025/2")
-5. Usuário cadastra prédios, salas e turmas do projeto
+4. Usuário acessa /projects → cria um projeto (ex: "2025/2") com data de início e de término
+5. Usuário cadastra prédios, salas (com características) e turmas (com requisitos) do projeto
 6. Usuário acessa /projects/:id/allocation → monta o cronograma manualmente
-   (adiciona utilizações em horários disponíveis)
+   (navega pelas datas e adiciona eventos recorrentes ou únicos em horários disponíveis)
 7. Usuário executa a alocação automática na mesma tela → cronograma completo do semestre
 8. Usuário consulta /projects/:id/reports
+9. Admin consulta /audit → quem alterou o quê e quando
 ```
 
 ## Escopo do MVP
@@ -64,11 +69,12 @@ A alocação **manual** (telas base do cronograma) é entregue antes da **autom�
 - Tela de login, logout e recuperação de senha
 - Gerenciamento de institutos (admin)
 - Gerenciamento de usuários (admin)
-- Criação e listagem de projetos (user)
-- Cadastro de prédios, salas e turmas (user)
-- Cronograma e adição manual de utilizações — semanais ou de dia único (user)
+- Criação e listagem de projetos, com datas do semestre (user)
+- Cadastro de prédios, salas e turmas, com características fixas por checkboxes (user)
+- Cronograma por data e adição manual de eventos — recorrentes ou únicos, com cor nos únicos (user)
 - Visualização e execução de alocação automática (user)
 - Relatórios de ocupação e exportação (user)
+- Auditoria das alterações e logins (admin)
 - Tema claro/escuro (dark mode) com preferência salva
 
 ### Fora do escopo (versão atual)

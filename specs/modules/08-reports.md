@@ -1,14 +1,14 @@
-# Módulo 7 — Relatórios e Exportação
+# Módulo 8 — Relatórios e Exportação
 
 **Status:** `draft`
-**Depende de:** Módulo 5 (Auto Allocation)
+**Depende de:** Módulo 6 (Alocação Manual e Cronograma) e Módulo 7 (Alocação Automática)
 **API correspondente:** `AlocacaoDeSalas-API/specs/modules/07-reports.md` (a ser criado)
 
 ---
 
 ## Visão Geral
 
-Exibe relatórios de ocupação, grades por sala e por professor, além da exportação dos dados em diferentes formatos. Acessível por `coordinator` e `professor` (somente leitura). `admin` não acessa relatórios de projetos diretamente.
+Exibe relatórios de ocupação, grades por sala e por professor, além da exportação dos dados em diferentes formatos. Acessível por `user` (gerente do instituto) e por `admin` (somente leitura). "Professor" aqui é o nome do docente registrado na turma — não é um role de login.
 
 ---
 
@@ -34,11 +34,11 @@ modules/report/
 
 | Path | View | Roles |
 |------|------|-------|
-| `/projects/:id/reports` | `ReportView` | `coordinator`, `professor` |
+| `/projects/:id/reports` | `ReportView` | `admin`, `user` |
 
 ---
 
-## 7.1 Tela de Relatórios (`ReportView`)
+## 8.1 Tela de Relatórios (`ReportView`)
 
 ### Layout
 
@@ -48,7 +48,7 @@ modules/report/
 
 ---
 
-## 7.2 Tab — Ocupação
+## 8.2 Tab — Ocupação
 
 ### Componentes
 
@@ -65,7 +65,7 @@ GET /projects/:id/reports/occupancy?buildingId=...
 
 ---
 
-## 7.3 Tab — Grade por Sala
+## 8.3 Tab — Grade por Sala
 
 ### Componentes
 
@@ -81,7 +81,7 @@ GET /projects/:id/reports/room-schedule?roomId=...
 
 ---
 
-## 7.4 Tab — Grade por Professor
+## 8.4 Tab — Grade por Professor
 
 ### Componentes
 
@@ -92,12 +92,12 @@ GET /projects/:id/reports/room-schedule?roomId=...
 ### Chamada à API
 
 ```
-GET /projects/:id/reports/professor-schedule?professorId=...
+GET /projects/:id/reports/professor-schedule?professor=<nome do professor>
 ```
 
 ---
 
-## 7.5 Exportação (`ExportPanel`)
+## 8.5 Exportação (`ExportPanel`)
 
 ### Formatos disponíveis
 

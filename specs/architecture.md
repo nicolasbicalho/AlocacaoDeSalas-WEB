@@ -33,9 +33,11 @@ src/
 ├── types/
 │   └── index.ts               # Tipos globais (re-exporta tipos dos módulos)
 ├── shared/
-│   ├── components/            # Componentes reutilizáveis (Button, Input, Modal, etc.)
+│   ├── components/            # Componentes reutilizáveis (AppButton, AppInput, FeatureCheckboxes, etc.)
+│   ├── constants/
+│   │   └── roomFeatures.ts    # Catálogo fixo de características (rótulos em PT)
 │   └── layouts/
-│       ├── AppLayout.vue      # Layout autenticado (sidebar + header)
+│       ├── AppLayout.vue      # Layout autenticado (menu superior + conteúdo)
 │       └── AuthLayout.vue     # Layout de autenticação (centralizado)
 └── modules/
     ├── auth/
@@ -43,12 +45,15 @@ src/
     │   ├── components/        # Componentes específicos do módulo
     │   ├── stores/            # Store Pinia do módulo (se necessário)
     │   └── index.ts           # Re-exporta rotas do módulo
+    ├── dashboard/
     ├── institute/
-    ├── user/
     ├── project/
-    ├── dataUpload/
-    ├── allocation/
-    └── report/
+    ├── building/
+    ├── room/
+    ├── turma/
+    ├── allocation/            # Cronograma (grade por data, eventos recorrentes/únicos)
+    ├── audit/                 # Auditoria (admin)
+    └── report/                # (planejado — módulo 08)
 ```
 
 ## Padrão por Módulo
@@ -93,7 +98,7 @@ Usuário interage com componente
 | Layout | Usado em |
 |--------|----------|
 | `AuthLayout` | Rotas públicas: login, recuperação de senha |
-| `AppLayout` | Todas as rotas protegidas — inclui sidebar de navegação e header |
+| `AppLayout` | Todas as rotas protegidas — inclui o header com o menu superior de navegação |
 
 ## Guards de Rota
 

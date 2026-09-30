@@ -27,9 +27,13 @@
 /projects/new             → ProjectCreateView (AppLayout) — roles: user
 /projects/:id             → ProjectDetailView (AppLayout) — roles: admin, user
 /projects/:id/upload      → DataUploadView (AppLayout) — roles: user
-/projects/:id/allocation  → AllocationView (AppLayout) — roles: user
+/projects/:projectId/allocation → AllocationView (AppLayout) — roles: admin (leitura), user
 /projects/:id/reports     → ReportView (AppLayout) — roles: user
+
+/audit                    → AuditLogView (AppLayout) — roles: admin
 ```
+
+> O link **"Auditoria"** (`/audit`) aparece no menu superior do `AppLayout` somente para `admin` — ver [09-audit.md](../modules/09-audit.md).
 
 ---
 
