@@ -6,7 +6,8 @@
 
 > **Ordem de desenvolvimento:** a alocação **manual é implementada antes** da automática (Módulo 7). Ela introduz a entidade **evento** e a visão de **cronograma**, que a alocação automática depois preencherá em lote.
 
-> **Planejado — feedback do gerente (2026-10):** filtro e legenda por categoria (graduação, pós, externa; únicos mantêm a própria cor) na fase 1, **sugestão de salas** no modal — livres, compatíveis e ordenadas por melhor encaixe e pelas preferências do professor — na fase 2, e turmas com **sala de prática simultânea** (dois eventos, teórico e prático, no mesmo horário) na fase 3. Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+> **Feedback do gerente (2026-10) — fase 1 implementada:** filtro **"Mostrar"** (todos / graduação / pós-graduação / externas / só eventos únicos) e legenda por categoria: eventos **recorrentes** usam o tom da categoria da turma (graduação = azul, pós = verde-água, externa = cinza); **únicos** mantêm a cor escolhida e o selo "Único". Os contadores da faixa da semana seguem o filtro.
+> **Planejado:** sugestão de salas no modal — livres, compatíveis e ordenadas por melhor encaixe e pelas preferências do professor (fase 2) — e turmas com sala de prática simultânea (fase 3). Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
 
 ---
 

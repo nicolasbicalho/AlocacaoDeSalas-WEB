@@ -4,7 +4,7 @@
 **Depende de:** Módulo 3 (Projects), Módulo 5 (Turmas), Módulo 6 (Alocação Manual e Cronograma), Módulo 9 (Auditoria)
 **API correspondente:** nenhuma específica — compõe endpoints já existentes (ver 10.3)
 
-> **Planejado — feedback do gerente (2026-10):** nova pendência "turmas sem nº de alunos" (o número chega depois da planilha). Fase 1 do [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+> **Feedback do gerente (2026-10) — fase 1 implementada:** nova pendência **"N turma(s) sem nº de alunos → Preencher"** (o número chega depois da planilha; sem ele a capacidade não pode ser conferida), levando à aba Turmas, onde o número é editado direto na tabela.
 
 ---
 
@@ -106,4 +106,5 @@ Os links do painel usam query params lidos pela `AllocationView` (ver Módulo 6)
 - [x] Pendência "sem sala" abre o cronograma com o modal preenchido para aquele horário
 - [x] Próximo evento único leva a grade até o evento, com destaque
 - [x] Admin vê contadores, institutos ativos sem projeto ativo e as últimas ações da auditoria
+- [x] Pendência "turmas sem nº de alunos" leva à aba Turmas
 - [x] Dark mode em todo o módulo

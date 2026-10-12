@@ -4,7 +4,8 @@
 **Depende de:** Módulo 1 (Auth), Módulo 2 (Institutes), Módulo 3 (Projects)
 **API correspondente:** [`AlocacaoDeSalas-API/specs/modules/05-turmas.md`](../../../AlocacaoDeSalas-API/specs/modules/05-turmas.md)
 
-> **Planejado — feedback do gerente (2026-10):** a aba Turmas vira a ferramenta principal do gerente — abas **Graduação / Pós / Externas**, busca por disciplina/professor/código/setor, ordem alfabética correta, **nº de alunos editável na tabela** e coluna **Sala(s)**; formulário com categoria, setor (departamento) e anotações (fase 1); seletor de professor a partir do novo cadastro de professores (fase 2); sala de prática simultânea (fase 3). Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+> **Feedback do gerente (2026-10) — fase 1 implementada:** a aba Turmas é a ferramenta principal do gerente (seções 5.1 e 5.2).
+> **Planejado:** seletor de professor a partir do cadastro de professores (fase 2) e sala de prática simultânea (fase 3). Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
 
 ---
 
@@ -44,10 +45,20 @@ As telas de turma são abas do `ProjectShell` (breadcrumb `Projetos › {projeto
 ---
 
 ## 5.1 Lista (por projeto)
-Tabela: Nome, Código, Nº alunos, Professor, Nº horários, Status, Ações (Ver). Botão "Nova turma" (`user`). Breadcrumb: Projetos / {projeto} / Turmas.
+Aba **Turmas** do projeto, pensada como a ferramenta de trabalho do gerente:
+
+- **Abas por categoria:** Todas · Graduação · Pós-graduação · Externas, com contadores (`GET /turmas/counts`). Atalho **"Eventos únicos →"** para o cronograma, onde os únicos são listados.
+- **Busca** por disciplina, professor, código ou setor (debounce de 300 ms; também atualiza os contadores das abas).
+- Aba e busca ficam na URL (`?categoria=pos&q=dmat`): voltar do detalhe de uma turma mantém o filtro.
+- **Ordem alfabética do português**, vinda da API (acentos e maiúsculas não interferem). 50 turmas por página.
+- Colunas: **Disciplina** (📝 quando há anotações, com o texto no *tooltip*), Código, Categoria (só na aba Todas), Professor, Setor, **Horários** (ex.: "Seg 08:00–10:00"), **Nº alunos**, **Sala(s)**, Status, Ver.
+- **Nº alunos editável na célula** (`StudentCountCell`): clicar abre o campo; **Enter** ou sair do campo salva (`PUT /turmas/:id { studentCount }`), **Esc** cancela; vazio = "a definir" (selo âmbar). Mostra confirmação e, em erro, desfaz. Somente leitura para `admin`.
+- **Sala(s):** nomes das salas dos eventos **recorrentes** da turma e o progresso — "2/2 horários" (verde), "1/2 horários" ou "sem sala" (âmbar) — com **"Alocar →"** que abre o cronograma na próxima data do primeiro horário pendente, já com o modal preenchido (mesmo link profundo do dashboard). Um horário conta como coberto quando um evento recorrente da turma, no mesmo dia, abrange o horário inteiro (`summarizeTurmaRooms`, em `modules/turma/helpers.ts`).
+
+Botão "Nova turma" (`user`).
 
 ## 5.2 Form (`TurmaForm`)
-- Campos: nome, código (opcional), nº de alunos, professor.
+- Campos, na ordem da planilha do gerente: **Disciplina**, **Código da turma** (obrigatório), **Nº de alunos** (opcional — em branco = "a definir"), **Categoria** (Graduação / Pós-graduação / Disciplina externa), **Professor**, **Setor (departamento)** e **Anotações** (texto livre, como veio da planilha).
 - **Requisitos (`FeatureCheckboxes`)**: checkboxes com as 6 características fixas (`ROOM_FEATURES`); a seleção é enviada como `requiredFeatures: RoomFeature[]`. A turma só cabe em salas cujas características incluam todas as exigidas (`sala.features ⊇ turma.requiredFeatures`).
 - **`ScheduleEditor`**: linhas dinâmicas de horário — seletor de dia (Seg–Sáb) + hora início + hora fim; adicionar/remover; valida `fim > início`.
 - Erros inline: `TURMA_CODE_EXISTS` → campo código.
@@ -66,6 +77,11 @@ O antigo `RequiredAttributesEditor` (chaves livres por chips) deixou de existir.
 
 ## Critérios de Aceitação
 - [x] `user` cria/edita/desativa turmas de um projeto do seu instituto
+- [x] Abas Todas / Graduação / Pós-graduação / Externas com contadores; busca por disciplina, professor, código ou setor
+- [x] Lista em ordem alfabética correta em português
+- [x] Nº de alunos editável direto na tabela (Enter/Esc), aceitando "a definir"
+- [x] Coluna Sala(s) com salas alocadas, progresso dos horários e atalho "Alocar →"
+- [x] Formulário com categoria, setor (departamento) e anotações; código obrigatório
 - [x] Editor de horários permite N faixas por semana com validação de `fim > início`
 - [x] Requisitos são marcados por checkboxes com as 6 características fixas
 - [x] `admin` vê em somente leitura
