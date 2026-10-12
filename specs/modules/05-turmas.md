@@ -4,7 +4,7 @@
 **Depende de:** Módulo 1 (Auth), Módulo 2 (Institutes), Módulo 3 (Projects)
 **API correspondente:** [`AlocacaoDeSalas-API/specs/modules/05-turmas.md`](../../../AlocacaoDeSalas-API/specs/modules/05-turmas.md)
 
-> **Planejado — feedback do gerente (2026-10):** a aba Turmas vira a ferramenta principal do gerente — abas **Graduação / Pós / Externas**, busca por disciplina/professor/código, filtro por professor, ordem alfabética correta, **nº de alunos editável na tabela** e coluna **Sala(s)**; formulário com categoria, setor e anotações (fase 1); tipo teórica/prática por horário (fase 3). Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+> **Planejado — feedback do gerente (2026-10):** a aba Turmas vira a ferramenta principal do gerente — abas **Graduação / Pós / Externas**, busca por disciplina/professor/código/setor, ordem alfabética correta, **nº de alunos editável na tabela** e coluna **Sala(s)**; formulário com categoria, setor (departamento) e anotações (fase 1); seletor de professor a partir do novo cadastro de professores (fase 2); sala de prática simultânea (fase 3). Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
 
 ---
 
