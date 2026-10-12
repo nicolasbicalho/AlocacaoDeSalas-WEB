@@ -1,121 +1,107 @@
 # Módulo 7 — Alocação Automática
 
-**Status:** `draft`
+**Status:** `review` — spec revisada em 2026-10-12 para a fase 5 do [plano do feedback do gerente](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md); aguardando aprovação para implementar.
 **Depende de:** Módulo 6 (Alocação Manual e Cronograma)
-**API correspondente:** [`AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md`](../../../AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md)
+**API correspondente:** [`AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md`](../../../AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md) — critérios, ordem de processamento, pontuação, motivos e contrato.
 
-> **Ordem de desenvolvimento:** implementado **após** a alocação manual (Módulo 6). Reutiliza a entidade **evento** e a visão de **cronograma** definidas lá — aqui um algoritmo gera eventos em lote.
-
-> **Planejado — feedback do gerente (2026-10):** critérios e ordem de processamento revistos ("exigências raras primeiro, depois turmas menores primeiro"). Fase 5 do [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+> **O que mudou em relação ao rascunho:** em vez de "gerar e pronto", o gerente **simula**, confere e só então **aplica**; os eventos gerados ficam **marcados como automáticos**, para "refazer" ou "remover automáticas" sem tocar no que foi lançado à mão; há uma **comparação de estratégias** (a do gerente × "maiores primeiro") para o TCC.
 
 ---
 
 ## Visão Geral
 
-O `user` executa a alocação automática de turmas em salas dentro de um projeto ativo. O **processamento automático preenche o cronograma do semestre** — gera os **eventos recorrentes** das turmas nos horários da `schedule` que ainda não têm sala — sem conflitos de horário e respeitando os eventos já lançados manualmente. Eventos **únicos** são sempre manuais.
+No Cronograma, o `user` abre o painel **Alocação automática**, simula e vê o que seria alocado e o que ficaria sem sala (com o motivo). Se estiver bom, aplica: os eventos recorrentes aparecem na grade, marcados como automáticos, e continuam editáveis como qualquer evento (Módulo 6). `admin` vê o cronograma, mas não o painel.
 
-O resultado popula a mesma grade do Módulo 6. Depois de gerado, o cronograma pode ser refinado manualmente (mover, remover ou adicionar eventos). A tela exibe o progresso da execução e as turmas não alocadas (se existirem).
-
-Critérios do algoritmo (detalhados na [API 07](../../../AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md)):
-
-**Restrições obrigatórias:**
-- Sem conflito de sala e sem conflito de turma
-- Capacidade: `capacity >= studentCount`
-- Requisitos: características da sala incluem as exigidas pela turma (`features ⊇ requiredFeatures`)
-- Manual primeiro: eventos lançados manualmente são mantidos; o automático preenche o restante
-- Só gera eventos recorrentes de turmas
-
-**Preferências, por prioridade:**
-1. **Evitar desperdício** — a sala de menor capacidade que comporte a turma (best fit)
-2. **Requisitos** — verificados como filtro de salas (restrição acima), não como pontuação
-3. **Menor deslocamento** — turmas do mesmo período (mesmo grupo de alunos) em horários próximos não devem percorrer grandes distâncias (distância entre prédios por latitude/longitude). Depende de um campo futuro na turma (ex.: `period`), ainda não implementado.
-
-**Desempate:** mesma turma/professor em horários consecutivos prefere a mesma sala/prédio.
+Em resumo, o algoritmo (detalhes na API):
+- só preenche **o que falta**: horários de turma sem sala, em cada papel (teórica e, com aula prática, prática);
+- **nunca** quebra capacidade (turma inteira, nas duas salas) nem as características exigidas — diferente do manual, onde são avisos;
+- **pula** turmas com nº de alunos "a definir";
+- ordem do gerente (D6): **exigências raras primeiro, depois as turmas menores**;
+- escolhe a sala como a sugestão de salas da fase 2 (encaixe + preferências do professor), preferindo manter a mesma turma na mesma sala ao longo da semana.
 
 ---
 
-## Estrutura do Módulo
+## 7.1 Painel `AutoAllocationPanel`
 
-Compartilhado com o Módulo 6 — usa a mesma `AllocationView` e `ScheduleGrid`.
+Seção recolhível no topo do Cronograma (entre os indicadores e a faixa da semana), visível para `user` com projeto não encerrado.
 
-Componentes adicionais específicos da execução automática:
+- **Estratégia:** "Do gerente — exigências raras, depois as menores" (padrão) | "Maiores primeiro (comparação)".
+- **"Refazer as automáticas"** (caixa; aparece quando já há eventos automáticos): recalcula ignorando os automáticos atuais, que são substituídos ao aplicar. Os manuais nunca mudam.
+- Botões:
+  - **Simular** → `POST …/allocations/auto/preview`; mostra o resultado (7.2) sem gravar;
+  - **Comparar estratégias** → `POST …/allocations/auto/compare`; mostra a tabela de 7.3;
+  - **Remover automáticas (N)** → confirmação → `DELETE …/allocations/auto`; recarrega a grade.
+- Texto curto de ajuda: "O automático só preenche horários sem sala. Eventos lançados à mão ficam como estão; editar um evento automático o torna manual."
+
+## 7.2 Resultado `AutoAllocationResult`
+
+- **Indicadores:** alocados / demandas, sem sala, turmas puladas, lugares desperdiçados, ocupação média, preferências atendidas (x de y), salas grandes demais.
+- **Ficam sem sala** (sempre visível quando houver): turma, papel (se a turma tem prática), dia e horário, **motivo em português** e **"Alocar →"** (o mesmo atalho do dashboard, que abre o modal manual já preenchido). Turmas puladas aparecem com "Sem nº de alunos — preencher na aba Turmas →".
+- **Vai alocar** (recolhível): turma, papel, dia e horário, sala e selos das preferências (✓/✗/? como na sugestão de salas).
+- Ações: **Aplicar (N eventos)** → `POST …/allocations/auto` (o servidor recalcula; o resultado mostrado passa a ser o aplicado) → toast, grade e indicadores recarregados. **Descartar** fecha o resultado.
+
+Motivos (`reason`) → texto:
+
+| Código | Texto |
+|--------|-------|
+| `NO_STUDENT_COUNT` | Sem nº de alunos (a capacidade não pode ser conferida) |
+| `NO_ROOM_WITH_FEATURES` | Nenhuma sala tem as características exigidas |
+| `NO_ROOM_WITH_CAPACITY` | Nenhuma sala com as características comporta a turma |
+| `ALL_OCCUPIED` | Todas as salas compatíveis estão ocupadas nesse horário |
+| `TURMA_BUSY` | A turma já tem outro evento desse papel nesse horário |
+
+## 7.3 Comparação de estratégias
+
+Tabela "métrica × estratégia" (do gerente | maiores primeiro), com a melhor de cada linha destacada: alocados, sem sala, lugares desperdiçados, ocupação média, preferências atendidas, salas grandes demais. Serve de evidência para o TCC — mesmos dados, só a ordem muda. Não grava nada.
+
+## 7.4 Grade
+
+Eventos com `source: 'auto'` mostram **"Automática"** no subtítulo do bloco (junto de horário, papel e professor) e a legenda ganha a nota "Automática = gerada pela alocação automática". Editar um desses eventos o torna manual (a marca some).
+
+---
+
+## Chamadas à API
 
 ```
-modules/allocation/
-└── components/
-    ├── AllocationRunPanel.vue     # Painel de execução da alocação automática
-    └── UnallocatedClassList.vue   # Lista de turmas sem sala + motivo
+POST   /projects/:projectId/allocations/auto/preview   # simular  { strategy, replaceAuto }
+POST   /projects/:projectId/allocations/auto           # aplicar  { strategy, replaceAuto }
+POST   /projects/:projectId/allocations/auto/compare   # comparar { replaceAuto }
+DELETE /projects/:projectId/allocations/auto           # remover os automáticos
 ```
 
 ---
 
-## Rotas
+## Arquivos
 
-| Path | View | Roles |
-|------|------|-------|
-| `/projects/:id/allocation` | `AllocationView` | `user` (execução), `admin` (leitura) |
+### WEB — criados
+| Arquivo | Conteúdo |
+|---------|----------|
+| `src/modules/allocation/components/AutoAllocationPanel.vue` | Painel (7.1): estratégia, refazer, simular, comparar, remover; controla o estado da execução |
+| `src/modules/allocation/components/AutoAllocationResult.vue` | Resultado (7.2) e comparação (7.3): indicadores, sem sala com "Alocar →", plano, aplicar/descartar |
+| `src/modules/allocation/autoAllocation.ts` | Textos dos motivos e das estratégias, formatação das métricas, link "Alocar" de uma demanda não atendida |
+| `src/modules/allocation/autoAllocation.test.ts` | Testes dos textos, da formatação e dos links |
 
-A mesma `AllocationView` do Módulo 6 — o painel de execução automática aparece para `user` quando o projeto está `active`.
+### WEB — modificados
+| Arquivo | Mudança |
+|---------|---------|
+| `src/types/index.ts` | `IAllocation.source`; tipos `AutoStrategy`, `AutoAllocationResult`, `AutoAllocationMetrics`, `UnallocatedReason`; `AuditAction` com `auto_allocate` |
+| `src/modules/allocation/services/allocation.service.ts` | `previewAutoAllocation`, `applyAutoAllocation`, `compareAutoAllocation`, `clearAutoAllocation` |
+| `src/modules/allocation/views/AllocationView.vue` | inclui o painel (só `user`, projeto não encerrado) e recarrega a grade depois de aplicar/remover |
+| `src/modules/allocation/components/ScheduleGrid.vue` | "Automática" no subtítulo dos eventos `source: 'auto'` |
+| `src/modules/audit/labels.ts` | rótulo "Alocação automática" para `auto_allocate` |
 
----
-
-## 7.1 Execução (`AllocationRunPanel`)
-
-Visível apenas para `user`.
-
-- Status atual: "Não executada" | "Em andamento" | "Concluída"
-- Botão "Gerar cronograma automático" (desabilitado se o projeto não tem turmas/salas)
-- Botão "Re-executar" após a primeira geração (abre confirmação — refaz os eventos gerados automaticamente; eventos manuais são mantidos)
-
-### Comportamento
-
-1. Ao montar, carrega o cronograma existente via `GET /projects/:id/allocations`
-2. `user` clica "Gerar" → confirmação se já existe cronograma
-3. Chama `POST /projects/:id/allocation/run`
-4. A API processa de forma síncrona (MVP) — exibe spinner e desabilita o botão
-5. Recebe o resultado, atualiza a grade e as estatísticas
-6. Se há turmas não alocadas, `UnallocatedClassList` é exibida com os motivos
-
----
-
-## 7.2 Chamadas à API
-
-```
-GET  /projects/:id/allocations       # Cronograma existente
-POST /projects/:id/allocation/run    # Gera o cronograma completo do semestre
-```
-
-Response de `/run`:
-```json
-{
-  "success": true,
-  "data": {
-    "allocated": 95,
-    "unallocated": 3,
-    "occupancyRate": 0.72,
-    "allocations": [ ... ],
-    "unallocatedClasses": [
-      { "turmaId": "...", "turmaName": "...", "reason": "Sem sala com capacidade suficiente" }
-    ]
-  }
-}
-```
+### Specs a atualizar na implementação
+`modules/07-auto-allocation.md` (status `implemented`), `modules/06-manual-allocation.md` (marca "Automática" na grade e PATCH que a remove), `modules/09-audit.md` e `README.md`.
 
 ---
 
 ## Critérios de Aceitação
 
-- [ ] Alocação automática gera os eventos recorrentes do semestre e popula a grade
-- [ ] Eventos lançados manualmente permanecem inalterados após a execução
-- [ ] Estatísticas de ocupação são exibidas corretamente
-- [ ] Turmas não alocadas são listadas com o motivo
-- [ ] Re-executar solicita confirmação antes de refazer os eventos automáticos
-- [ ] Após a geração, o cronograma pode ser ajustado manualmente (Módulo 6)
-- [ ] `admin` vê o cronograma em somente leitura (sem painel de execução)
-- [ ] Grade suporta filtro por prédio e navegação por data (Módulo 6)
-
----
-
-## Questões em aberto
-- Re-execução sem apagar eventos manuais exige distinguir eventos automáticos dos manuais na API — ver [API 07 — Questões em aberto](../../../AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md#questões-em-aberto).
-- Campo de período/curso da turma (pré-requisito do critério de menor deslocamento) — ainda não implementado.
+- [ ] Painel visível só para `user` com projeto não encerrado; `admin` vê a grade sem o painel
+- [ ] Simular mostra indicadores, o que vai alocar e o que fica sem sala (com motivo em português), sem gravar
+- [ ] Aplicar grava, recarrega a grade e mostra o resultado aplicado
+- [ ] Demandas sem sala têm "Alocar →" para resolver à mão; turmas puladas apontam para a aba Turmas
+- [ ] "Refazer as automáticas" substitui só os automáticos; "Remover automáticas" pede confirmação e mantém os manuais
+- [ ] Comparação das duas estratégias em tabela, sem gravar
+- [ ] Eventos automáticos aparecem como "Automática" na grade; editar um deles o torna manual
+- [ ] Dark mode em todos os elementos novos

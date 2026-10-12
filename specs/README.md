@@ -29,7 +29,7 @@ Ficam no repositório da API (valem para os dois projetos):
 | 4 | Estrutura Física (Prédios e Salas) | [04-physical-structure.md](./modules/04-physical-structure.md) | `implemented` |
 | 5 | Gerenciamento de Turmas | [05-turmas.md](./modules/05-turmas.md) | `implemented` |
 | 6 | Alocação Manual e Cronograma | [06-manual-allocation.md](./modules/06-manual-allocation.md) | `implemented` |
-| 7 | Alocação Automática | [07-auto-allocation.md](./modules/07-auto-allocation.md) | `draft` |
+| 7 | Alocação Automática | [07-auto-allocation.md](./modules/07-auto-allocation.md) | `review` |
 | 9 | Auditoria (transversal) | [09-audit.md](./modules/09-audit.md) | `implemented` |
 | 10 | Página Inicial (Dashboard) | [10-dashboard.md](./modules/10-dashboard.md) | `implemented` |
 | 11 | Professores | [11-professors.md](./modules/11-professors.md) | `implemented` |
