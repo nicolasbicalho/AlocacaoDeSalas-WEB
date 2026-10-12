@@ -5,7 +5,8 @@
 **API correspondente:** [`AlocacaoDeSalas-API/specs/modules/05-turmas.md`](../../../AlocacaoDeSalas-API/specs/modules/05-turmas.md)
 
 > **Feedback do gerente (2026-10) — fase 1 implementada:** a aba Turmas é a ferramenta principal do gerente (seções 5.1 e 5.2).
-> **Planejado:** seletor de professor a partir do cadastro de professores (fase 2) e sala de prática simultânea (fase 3). Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+> **Fase 2 implementada:** campo Professor com **autocompletar** do cadastro de professores e **seletor de professor** na aba Turmas ([módulo 11](./11-professors.md)).
+> **Planejado:** sala de prática simultânea (fase 3). Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
 
 ---
 
@@ -49,7 +50,8 @@ Aba **Turmas** do projeto, pensada como a ferramenta de trabalho do gerente:
 
 - **Abas por categoria:** Todas · Graduação · Pós-graduação · Externas, com contadores (`GET /turmas/counts`). Atalho **"Eventos únicos →"** para o cronograma, onde os únicos são listados.
 - **Busca** por disciplina, professor, código ou setor (debounce de 300 ms; também atualiza os contadores das abas).
-- Aba e busca ficam na URL (`?categoria=pos&q=dmat`): voltar do detalhe de uma turma mantém o filtro.
+- **Seletor de professor** ("Todos os professores" + cadastro do instituto): filtra a lista e os contadores das abas (`professorId`).
+- Aba, busca e professor ficam na URL (`?categoria=pos&q=dmat&professor=<id>`): voltar do detalhe de uma turma mantém o filtro.
 - **Ordem alfabética do português**, vinda da API (acentos e maiúsculas não interferem). 50 turmas por página.
 - Colunas: **Disciplina** (📝 quando há anotações, com o texto no *tooltip*), Código, Categoria (só na aba Todas), Professor, Setor, **Horários** (ex.: "Seg 08:00–10:00"), **Nº alunos**, **Sala(s)**, Status, Ver.
 - **Nº alunos editável na célula** (`StudentCountCell`): clicar abre o campo; **Enter** ou sair do campo salva (`PUT /turmas/:id { studentCount }`), **Esc** cancela; vazio = "a definir" (selo âmbar). Mostra confirmação e, em erro, desfaz. Somente leitura para `admin`.
@@ -59,7 +61,8 @@ Botão "Nova turma" (`user`).
 
 ## 5.2 Form (`TurmaForm`)
 - Campos, na ordem da planilha do gerente: **Disciplina**, **Código da turma** (obrigatório), **Nº de alunos** (opcional — em branco = "a definir"), **Categoria** (Graduação / Pós-graduação / Disciplina externa), **Professor**, **Setor (departamento)** e **Anotações** (texto livre, como veio da planilha).
-- **Requisitos (`FeatureCheckboxes`)**: checkboxes com as 6 características fixas (`ROOM_FEATURES`); a seleção é enviada como `requiredFeatures: RoomFeature[]`. A turma só cabe em salas cujas características incluam todas as exigidas (`sala.features ⊇ turma.requiredFeatures`).
+- **Professor** com autocompletar (`<datalist>`) do cadastro; mostra as preferências do professor reconhecido ou avisa "Professor novo — será cadastrado ao salvar" ([11.4](./11-professors.md#114-integração-com-turmas)).
+- **Requisitos (`FeatureCheckboxes`)**: checkboxes com as 5 características fixas (`ROOM_FEATURES`); a seleção é enviada como `requiredFeatures: RoomFeature[]`. A turma só cabe em salas cujas características incluam todas as exigidas (`sala.features ⊇ turma.requiredFeatures`).
 - **`ScheduleEditor`**: linhas dinâmicas de horário — seletor de dia (Seg–Sáb) + hora início + hora fim; adicionar/remover; valida `fim > início`.
 - Erros inline: `TURMA_CODE_EXISTS` → campo código.
 
@@ -83,7 +86,8 @@ O antigo `RequiredAttributesEditor` (chaves livres por chips) deixou de existir.
 - [x] Coluna Sala(s) com salas alocadas, progresso dos horários e atalho "Alocar →"
 - [x] Formulário com categoria, setor (departamento) e anotações; código obrigatório
 - [x] Editor de horários permite N faixas por semana com validação de `fim > início`
-- [x] Requisitos são marcados por checkboxes com as 6 características fixas
+- [x] Requisitos são marcados por checkboxes com as 5 características fixas
+- [x] Professor com autocompletar do cadastro; filtro por professor na aba Turmas
 - [x] `admin` vê em somente leitura
 - [x] Código duplicado no projeto exibe erro inline
 - [x] Turmas são acessadas a partir do projeto (rota aninhada)

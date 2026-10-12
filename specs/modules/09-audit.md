@@ -33,7 +33,7 @@ modules/audit/
 ```typescript
 type AuditEntity =
   | 'auth' | 'user' | 'institute' | 'project'
-  | 'building' | 'room' | 'turma' | 'allocation'
+  | 'building' | 'room' | 'turma' | 'allocation' | 'professor'
 
 type AuditAction =
   | 'create' | 'update' | 'delete' | 'move'

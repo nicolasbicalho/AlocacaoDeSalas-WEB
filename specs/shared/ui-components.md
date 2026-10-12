@@ -44,6 +44,7 @@ Campo de texto com suporte a label, erro e ícone.
 | `type` | `string` | `'text'` | Tipo HTML do input |
 | `disabled` | `boolean` | `false` | Desabilita o campo |
 | `required` | `boolean` | `false` | Marca como obrigatório |
+| `list` | `string` | — | id de um `<datalist>` (autocompletar; ex.: professor no `TurmaForm`) |
 
 **Emits:** `update:modelValue`
 
@@ -220,7 +221,7 @@ Grupo de checkboxes com as **características fixas de sala** (`ROOM_FEATURES`).
 
 > Exceção ao prefixo `App`: conhece a lista fixa de características do domínio, mas continua **puro** (sem HTTP nem store).
 
-**Opções (valor → rótulo):** `projetor` Projetor · `ar_condicionado` Ar-condicionado · `acessibilidade` Acessibilidade (PcD) · `computadores` Computadores (lab. de informática) · `som` Sistema de som · `bancadas` Bancadas (lab. experimental)
+**Opções (valor → rótulo):** `acessibilidade` Acessibilidade (PcD) · `camera` Câmera (transmissão) · `computadores` Computadores (lab. de informática) · `bancadas` Bancadas (lab. experimental) · `som` Sistema de som
 
 **Props:**
 | Prop | Tipo | Default | Descrição |

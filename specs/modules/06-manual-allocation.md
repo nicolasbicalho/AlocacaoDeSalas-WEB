@@ -7,7 +7,8 @@
 > **Ordem de desenvolvimento:** a alocação **manual é implementada antes** da automática (Módulo 7). Ela introduz a entidade **evento** e a visão de **cronograma**, que a alocação automática depois preencherá em lote.
 
 > **Feedback do gerente (2026-10) — fase 1 implementada:** filtro **"Mostrar"** (todos / graduação / pós-graduação / externas / só eventos únicos) e legenda por categoria: eventos **recorrentes** usam o tom da categoria da turma (graduação = azul, pós = verde-água, externa = cinza); **únicos** mantêm a cor escolhida e o selo "Único". Os contadores da faixa da semana seguem o filtro.
-> **Planejado:** sugestão de salas no modal — livres, compatíveis e ordenadas por melhor encaixe e pelas preferências do professor (fase 2) — e turmas com sala de prática simultânea (fase 3). Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+> **Fase 2 implementada:** [sugestão de salas](#sugestão-de-salas) no modal — livres, compatíveis e ordenadas por melhor encaixe e pelas preferências do professor.
+> **Planejado:** turmas com sala de prática simultânea (fase 3). Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
 
 ---
 
@@ -122,7 +123,18 @@ A query é lida uma vez ao carregar e depois limpa da URL (recarregar não reabr
 - **Único:** data (dentro do semestre; domingo barrado no cliente e no servidor; dia da semana derivado e exibido), sala, início e fim, e **exatamente um** entre turma (ex.: reposição) e título livre (2–120 caracteres, ex.: "Palestra de IA").
 - **Paleta de cores:** quando o tipo é "Único", aparece uma paleta de amostras de cor (seleção única) com `EVENT_COLORS` — `amber` (padrão), `emerald`, `rose`, `violet`, `sky`, `orange`.
 - Em modo **mover**, a turma fica fixa (muda sala/horário/tipo/data/cor; o título só para evento de texto livre) e chama `PATCH`. Evento de texto livre não pode virar recorrente (`ALLOCATION_WEEKLY_REQUIRES_TURMA`).
+- Ordem dos campos: tipo → turma (ou título) → dia/data → início e fim → **salas sugeridas** → sala → cor (único). A sugestão depende da turma e do horário, por isso vem depois deles.
 - Erros exibidos inline no modal: conflito de sala, conflito de turma, data fora do semestre (`ALLOCATION_DATE_OUT_OF_RANGE`), dados inválidos, projeto encerrado.
+
+### Sugestão de salas
+
+Quando o evento é de **turma** e o horário é válido, o modal consulta `GET …/allocations/suggestions` (debounce de 250 ms; na edição, com `excludeId` do próprio evento) e mostra o painel **"Salas sugeridas"**:
+- cabeçalho com o nº de alunos (ou "a definir") e as características exigidas; linha "{professor} prefere: …" quando há preferências;
+- até **4 salas livres que servem** (comportam a turma inteira e têm as características), na ordem da API: nome · prédio, "50 lugares · sobram 5" e selos das preferências — verde ✓ atendida, vermelho ✗ não atendida, cinza "?" sala sem o dado;
+- clicar numa sugestão escolhe a sala; "Fora da lista: …" resume as demais (mais que servem, livres que não servem, ocupadas); sem nenhuma que sirva, um aviso;
+- **pré-seleção:** ao criar sem sala definida (ex.: atalho "Alocar →"), a melhor sugestão vem selecionada até o gerente escolher outra; sala vinda da célula clicada ou da edição não é trocada.
+
+Abaixo do campo Sala, **avisos** para a sala escolhida (`roomWarnings`): ocupada no horário, capacidade menor que a turma, características faltando. São avisos — a alocação manual continua permitida; só os conflitos bloqueiam no servidor. Os textos ficam em `modules/allocation/suggestions.ts` (com testes).
 
 ## 6.3 Chamadas à API
 
@@ -132,6 +144,7 @@ GET    /projects/:projectId/allocations                 # cronograma
 POST   /projects/:projectId/allocations                 # criar (turmaId | title, roomId, timeSlot, type, date?, color?)
 PATCH  /projects/:projectId/allocations/:id             # mover/editar (roomId, timeSlot, type, date?, title?, color?)
 DELETE /projects/:projectId/allocations/:id             # remover
+GET    /projects/:projectId/allocations/suggestions     # salas sugeridas (turmaId, type, day|date, start, end, excludeId?)
 ```
 
 ---
@@ -151,6 +164,9 @@ DELETE /projects/:projectId/allocations/:id             # remover
 - [x] `user` move/edita (PATCH) e remove (com confirmação) eventos
 - [x] `admin` vê o cronograma em somente leitura (sem ações de edição)
 - [x] Dark mode em todos os elementos do módulo
+- [x] Modal mostra as salas sugeridas (livres e compatíveis, com selos das preferências do professor); clicar escolhe a sala
+- [x] Ao criar sem sala definida, a melhor sugestão vem pré-selecionada; na edição, o próprio evento não ocupa a sala
+- [x] Sala escolhida que não comporta, não tem as características ou está ocupada gera aviso no modal
 
 ---
 

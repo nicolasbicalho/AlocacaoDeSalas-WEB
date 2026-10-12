@@ -4,7 +4,7 @@
 **Depende de:** Módulo 1 (Auth), Módulo 2 (Institutes)
 **API correspondente:** [`AlocacaoDeSalas-API/specs/modules/04-physical-structure.md`](../../../AlocacaoDeSalas-API/specs/modules/04-physical-structure.md)
 
-> **Planejado — feedback do gerente (2026-10):** formulário de sala com o catálogo revisto (sai projetor/ar-condicionado, entra câmera) e campos de andar, nº de quadros e extremidade do corredor. Fase 2 do [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+> **Feedback do gerente (2026-10) — fase 2 implementada:** formulário de sala com o catálogo revisto (saíram projetor e ar-condicionado, que todas as salas têm; entrou câmera) e campos de **andar**, **quadros** e **extremidade do corredor**, usados contra as preferências dos professores. Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
 
 ---
 
@@ -64,23 +64,24 @@ Salas são listadas e criadas a partir do prédio (rota aninhada por `buildingId
 
 ## 4.2 Salas
 
-- **Lista (por prédio)**: tabela (Nome, Código, Capacidade, Características, Status, Ações), "Nova sala" (`user`). A coluna Características mostra os rótulos das características da sala.
-- **Form (`RoomForm`)**: nome, código, capacidade + **`FeatureCheckboxes`** (características da sala).
+- **Lista (por prédio)**: tabela (Nome, Código, Capacidade, **Andar** — com o selo "extremidade" quando a sala fica na ponta do corredor —, **Quadros**, Características, Status, Ações), "Nova sala" (`user`). A coluna Características mostra os rótulos das características da sala.
+- **Form (`RoomForm`)**: nome, código, capacidade + **`FeatureCheckboxes`** (características da sala) + o grupo **"Para as preferências dos professores"**: Andar (`0` = térreo), Quadros e Extremidade do corredor (Não informado / Sim / Não). Em branco = não informado (`null`; na edição remove o campo) — a preferência do professor fica "desconhecida", não atendida.
 - **Detalhe**: edição/desativação (`user`), somente leitura (`admin`).
 - **Erros inline**: `ROOM_CODE_EXISTS` → campo código.
 
 ### Características (`FeatureCheckboxes`)
 
-Componente compartilhado (ver [ui-components.md](../shared/ui-components.md#featurecheckboxes)) com as 6 opções fixas de `ROOM_FEATURES`:
+Componente compartilhado (ver [ui-components.md](../shared/ui-components.md#featurecheckboxes)) com as 5 opções fixas de `ROOM_FEATURES`:
 
 | Valor | Rótulo |
 |-------|--------|
-| `projetor` | Projetor |
-| `ar_condicionado` | Ar-condicionado |
 | `acessibilidade` | Acessibilidade (PcD) |
+| `camera` | Câmera (transmissão) |
 | `computadores` | Computadores (lab. de informática) |
-| `som` | Sistema de som |
 | `bancadas` | Bancadas (lab. experimental) |
+| `som` | Sistema de som |
+
+Projetor e ar-condicionado saíram do catálogo na fase 2 (todas as salas têm).
 
 O `RoomForm` envia a seleção como `features: RoomFeature[]` no payload. Substitui o antigo `RoomAttributesEditor` (chave-valor), que deixou de existir.
 
@@ -91,7 +92,8 @@ O `RoomForm` envia a seleção como `features: RoomFeature[]` no payload. Substi
 ## Critérios de Aceitação
 
 - [x] `user` cria/edita/desativa prédios e salas do seu instituto
-- [x] O form de sala marca as características por checkboxes (6 opções fixas)
+- [x] O form de sala marca as características por checkboxes (5 opções fixas, com câmera)
+- [x] O form de sala tem andar, quadros e extremidade do corredor (em branco = não informado); a lista mostra andar, quadros e o selo "extremidade"
 - [x] A lista de salas mostra as características de cada sala
 - [x] `admin` vê prédios e salas em somente leitura
 - [x] Código duplicado (prédio ou sala) exibe erro inline no campo correto

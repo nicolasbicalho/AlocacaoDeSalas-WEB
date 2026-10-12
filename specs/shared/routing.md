@@ -41,6 +41,10 @@
     rooms/new             → RoomCreateView      [aba Salas] — roles: user
     rooms/:roomId         → RoomDetailView      [aba Salas]
 
+/professors               → ProfessorListView (AppLayout) — roles: admin, user
+/professors/new           → ProfessorCreateView (AppLayout) — roles: user
+/professors/:professorId  → ProfessorDetailView (AppLayout) — roles: admin, user
+
 /turmas/:id               → redireciona para /projects/:projectId/turmas/:id   (URL antiga)
 /rooms/:id                → redireciona para /buildings/:buildingId/rooms/:id  (URL antiga)
 

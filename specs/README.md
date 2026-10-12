@@ -10,7 +10,7 @@ Este diretório contém todas as especificações do projeto frontend seguindo o
 ### Levantamentos e Planos
 Ficam no repositório da API (valem para os dois projetos):
 - [Levantamento — conversa com o gerente que aloca as salas (2026-10-12)](../../AlocacaoDeSalas-API/specs/research/2026-10-12-entrevista-gerente.md)
-- [Plano — mudanças a partir do feedback do gerente](../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md) `in progress` (fase 1 implementada)
+- [Plano — mudanças a partir do feedback do gerente](../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md) `in progress` (fases 1 e 2 implementadas)
 
 ### Arquitetura e Convenções
 - [Arquitetura Geral](./architecture.md)
@@ -32,6 +32,7 @@ Ficam no repositório da API (valem para os dois projetos):
 | 7 | Alocação Automática | [07-auto-allocation.md](./modules/07-auto-allocation.md) | `draft` |
 | 9 | Auditoria (transversal) | [09-audit.md](./modules/09-audit.md) | `implemented` |
 | 10 | Página Inicial (Dashboard) | [10-dashboard.md](./modules/10-dashboard.md) | `implemented` |
+| 11 | Professores | [11-professors.md](./modules/11-professors.md) | `implemented` |
 <!-- | 8 | Relatórios e Exportação | [08-reports.md](./modules/08-reports.md) | `draft` | -->
 
 ## Status Possíveis
