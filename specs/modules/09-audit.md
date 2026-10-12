@@ -37,7 +37,7 @@ type AuditEntity =
 
 type AuditAction =
   | 'create' | 'update' | 'delete' | 'move'
-  | 'activate' | 'deactivate' | 'close' | 'import'
+  | 'activate' | 'deactivate' | 'close' | 'import' | 'auto_allocate'
   | 'login' | 'login_failed' | 'logout'
   | 'forgot_password' | 'reset_password'
 

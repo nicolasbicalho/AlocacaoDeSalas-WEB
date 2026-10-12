@@ -63,6 +63,7 @@ interface IAllocation {
   type: AllocationType
   date?: string           // 'YYYY-MM-DD', só em único
   role?: 'teorica' | 'pratica'  // presente em todo evento de turma (eventos antigos vêm como 'teorica')
+  source?: 'auto'         // gerado pela alocação automática (módulo 07)
   createdAt: string
   updatedAt: string
 }
@@ -171,6 +172,7 @@ GET    /projects/:projectId/allocations/suggestions     # salas sugeridas (turma
 - [x] Ao criar sem sala definida, a melhor sugestão vem pré-selecionada; na edição, o próprio evento não ocupa a sala
 - [x] Sala escolhida que não comporta, não tem as características ou está ocupada gera aviso no modal
 - [x] Turma com aula prática: o modal pergunta o papel (teórica/prática) e a sugestão usa os requisitos do papel
+- [x] Eventos gerados pela [alocação automática](./07-auto-allocation.md) mostram "Automática" no subtítulo; editar um deles o torna manual
 - [x] Grade mostra a teórica e a prática da turma no mesmo horário, com "Teórica"/"Prática" no subtítulo; a lista de únicos indica o papel da reposição
 
 ---

@@ -1,6 +1,6 @@
 # Módulo 7 — Alocação Automática
 
-**Status:** `review` — spec revisada em 2026-10-12 para a fase 5 do [plano do feedback do gerente](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md); aguardando aprovação para implementar.
+**Status:** `implemented` — fase 5 do [plano do feedback do gerente](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md) (2026-10-12).
 **Depende de:** Módulo 6 (Alocação Manual e Cronograma)
 **API correspondente:** [`AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md`](../../../AlocacaoDeSalas-API/specs/modules/07-auto-allocation.md) — critérios, ordem de processamento, pontuação, motivos e contrato.
 
@@ -36,7 +36,7 @@ Seção recolhível no topo do Cronograma (entre os indicadores e a faixa da sem
 ## 7.2 Resultado `AutoAllocationResult`
 
 - **Indicadores:** alocados / demandas, sem sala, turmas puladas, lugares desperdiçados, ocupação média, preferências atendidas (x de y), salas grandes demais.
-- **Ficam sem sala** (sempre visível quando houver): turma, papel (se a turma tem prática), dia e horário, **motivo em português** e **"Alocar →"** (o mesmo atalho do dashboard, que abre o modal manual já preenchido). Turmas puladas aparecem com "Sem nº de alunos — preencher na aba Turmas →".
+- **Ficam sem sala · turmas puladas** (sempre visível quando houver; o título traz as duas contagens): turma, papel (se a turma tem prática), dia e horário, **motivo em português** e **"Alocar →"** (o mesmo atalho do dashboard, que abre o modal manual já preenchido). Turmas puladas aparecem com "Sem nº de alunos — preencher na aba Turmas →".
 - **Vai alocar** (recolhível): turma, papel, dia e horário, sala e selos das preferências (✓/✗/? como na sugestão de salas).
 - Ações: **Aplicar (N eventos)** → `POST …/allocations/auto` (o servidor recalcula; o resultado mostrado passa a ser o aplicado) → toast, grade e indicadores recarregados. **Descartar** fecha o resultado.
 
@@ -90,18 +90,18 @@ DELETE /projects/:projectId/allocations/auto           # remover os automáticos
 | `src/modules/allocation/components/ScheduleGrid.vue` | "Automática" no subtítulo dos eventos `source: 'auto'` |
 | `src/modules/audit/labels.ts` | rótulo "Alocação automática" para `auto_allocate` |
 
-### Specs a atualizar na implementação
-`modules/07-auto-allocation.md` (status `implemented`), `modules/06-manual-allocation.md` (marca "Automática" na grade e PATCH que a remove), `modules/09-audit.md` e `README.md`.
+### Specs atualizadas
+`modules/06-manual-allocation.md` (marca "Automática" na grade e PATCH que a remove), `modules/09-audit.md` e `README.md`.
 
 ---
 
 ## Critérios de Aceitação
 
-- [ ] Painel visível só para `user` com projeto não encerrado; `admin` vê a grade sem o painel
-- [ ] Simular mostra indicadores, o que vai alocar e o que fica sem sala (com motivo em português), sem gravar
-- [ ] Aplicar grava, recarrega a grade e mostra o resultado aplicado
-- [ ] Demandas sem sala têm "Alocar →" para resolver à mão; turmas puladas apontam para a aba Turmas
-- [ ] "Refazer as automáticas" substitui só os automáticos; "Remover automáticas" pede confirmação e mantém os manuais
-- [ ] Comparação das duas estratégias em tabela, sem gravar
-- [ ] Eventos automáticos aparecem como "Automática" na grade; editar um deles o torna manual
-- [ ] Dark mode em todos os elementos novos
+- [x] Painel visível só para `user` com projeto não encerrado; `admin` vê a grade sem o painel
+- [x] Simular mostra indicadores, o que vai alocar e o que fica sem sala (com motivo em português), sem gravar
+- [x] Aplicar grava, recarrega a grade e mostra o resultado aplicado
+- [x] Demandas sem sala têm "Alocar →" para resolver à mão; turmas puladas apontam para a aba Turmas
+- [x] "Refazer as automáticas" substitui só os automáticos; "Remover automáticas" pede confirmação e mantém os manuais
+- [x] Comparação das duas estratégias em tabela, sem gravar
+- [x] Eventos automáticos aparecem como "Automática" na grade; editar um deles o torna manual
+- [x] Dark mode em todos os elementos novos

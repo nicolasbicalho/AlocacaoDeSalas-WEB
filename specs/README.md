@@ -10,7 +10,7 @@ Este diretório contém todas as especificações do projeto frontend seguindo o
 ### Levantamentos e Planos
 Ficam no repositório da API (valem para os dois projetos):
 - [Levantamento — conversa com o gerente que aloca as salas (2026-10-12)](../../AlocacaoDeSalas-API/specs/research/2026-10-12-entrevista-gerente.md)
-- [Plano — mudanças a partir do feedback do gerente](../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md) `in progress` (fases 1 a 4 implementadas)
+- [Plano — mudanças a partir do feedback do gerente](../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md) `implemented` (fases 1 a 5)
 
 ### Arquitetura e Convenções
 - [Arquitetura Geral](./architecture.md)
@@ -29,7 +29,7 @@ Ficam no repositório da API (valem para os dois projetos):
 | 4 | Estrutura Física (Prédios e Salas) | [04-physical-structure.md](./modules/04-physical-structure.md) | `implemented` |
 | 5 | Gerenciamento de Turmas | [05-turmas.md](./modules/05-turmas.md) | `implemented` |
 | 6 | Alocação Manual e Cronograma | [06-manual-allocation.md](./modules/06-manual-allocation.md) | `implemented` |
-| 7 | Alocação Automática | [07-auto-allocation.md](./modules/07-auto-allocation.md) | `review` |
+| 7 | Alocação Automática | [07-auto-allocation.md](./modules/07-auto-allocation.md) | `implemented` |
 | 9 | Auditoria (transversal) | [09-audit.md](./modules/09-audit.md) | `implemented` |
 | 10 | Página Inicial (Dashboard) | [10-dashboard.md](./modules/10-dashboard.md) | `implemented` |
 | 11 | Professores | [11-professors.md](./modules/11-professors.md) | `implemented` |
