@@ -7,6 +7,10 @@ export interface RoomCreatePayload {
   code: string
   capacity: number
   features: RoomFeature[]
+  /** null = não informado (na edição, remove o campo) */
+  floor: number | null
+  boardCount: number | null
+  corridorEnd: boolean | null
 }
 
 export type RoomUpdatePayload = Partial<Omit<RoomCreatePayload, 'buildingId'>>

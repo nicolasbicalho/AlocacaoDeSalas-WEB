@@ -2,11 +2,10 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { isAxiosError } from 'axios'
-import RoomForm from '../components/RoomForm.vue'
+import RoomForm, { type RoomValues } from '../components/RoomForm.vue'
 import AppButton from '@/shared/components/AppButton.vue'
 import { createRoom } from '../services/room.service'
 import { useUiStore } from '@/stores/ui'
-import type { RoomFeature } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,7 +16,7 @@ const listPath = `/buildings/${buildingId}/rooms`
 const loading = ref(false)
 const formRef = ref<InstanceType<typeof RoomForm> | null>(null)
 
-async function onSubmit(values: { name: string; code: string; capacity: number; features: RoomFeature[] }) {
+async function onSubmit(values: RoomValues) {
   loading.value = true
   try {
     const room = await createRoom({ buildingId, ...values })

@@ -36,13 +36,7 @@ export interface IBuilding {
 }
 
 /** Catálogo fixo de características de sala (espelha `ROOM_FEATURES` da API). */
-export type RoomFeature =
-  | 'projetor'
-  | 'ar_condicionado'
-  | 'acessibilidade'
-  | 'computadores'
-  | 'som'
-  | 'bancadas'
+export type RoomFeature = 'acessibilidade' | 'camera' | 'computadores' | 'bancadas' | 'som'
 
 export interface IRoom {
   id: string
@@ -52,6 +46,31 @@ export interface IRoom {
   instituteId: string
   capacity: number
   features: RoomFeature[]
+  /** andar (0 = térreo); ausente = não informado */
+  floor?: number
+  /** quantidade de quadros */
+  boardCount?: number
+  /** fica na extremidade do corredor */
+  corridorEnd?: boolean
+  active: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+/** Preferências de sala do professor (nunca bloqueiam; só ordenam as sugestões). */
+export interface ProfessorPreferences {
+  minBoards?: number
+  floors?: number[]
+  avoidCorridorEnd?: boolean
+}
+
+/** Cadastro do instituto — professor não é usuário de login. */
+export interface IProfessor {
+  id: string
+  instituteId: string
+  name: string
+  preferences: ProfessorPreferences
+  notes?: string
   active: boolean
   createdAt: string
   updatedAt: string
@@ -98,6 +117,8 @@ export interface ITurma {
   /** null = "a definir" (o número chega depois da planilha) */
   studentCount: number | null
   professor: string
+  /** cadastro de professores (associado pelo nome ao salvar a turma) */
+  professorId?: string
   requiredFeatures: RoomFeature[]
   schedule: TimeSlot[]
   active: boolean
@@ -135,6 +156,37 @@ export interface IAllocation {
   updatedAt: string
 }
 
+export type PreferenceKey = 'minBoards' | 'floors' | 'avoidCorridorEnd'
+export type PreferenceStatus = 'met' | 'unmet' | 'unknown'
+
+/** Uma sala avaliada para uma turma num horário (`GET …/allocations/suggestions`). */
+export interface RoomSuggestion {
+  roomId: string
+  name: string
+  code: string
+  buildingId: string
+  capacity: number
+  features: RoomFeature[]
+  floor?: number
+  boardCount?: number
+  corridorEnd?: boolean
+  /** livre no horário */
+  available: boolean
+  /** comporta a turma inteira e tem as características exigidas */
+  fits: boolean
+  capacityStatus: 'ok' | 'insufficient' | 'unknown'
+  slack: number | null
+  missingFeatures: RoomFeature[]
+  preferences: { key: PreferenceKey; status: PreferenceStatus }[]
+}
+
+export interface RoomSuggestions {
+  turma: { id: string; studentCount: number | null; requiredFeatures: RoomFeature[] }
+  professor: { id: string; name: string; preferences: ProfessorPreferences } | null
+  /** livres e compatíveis primeiro, na ordem de melhor escolha */
+  rooms: RoomSuggestion[]
+}
+
 export type AuditEntity =
   | 'auth'
   | 'user'
@@ -144,6 +196,7 @@ export type AuditEntity =
   | 'room'
   | 'turma'
   | 'allocation'
+  | 'professor'
 
 export type AuditAction =
   | 'create'

@@ -20,6 +20,7 @@ function turma(id: string, schedule: ITurma['schedule'], active = true): ITurma 
     projectId: 'p',
     instituteId: 'i',
     name: `Turma ${id}`,
+    category: 'graduacao',
     studentCount: 30,
     professor: 'Prof',
     requiredFeatures: [],

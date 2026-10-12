@@ -391,6 +391,7 @@ async function confirmDelete() {
         :project-id="projectId"
         :turmas="activeTurmas"
         :rooms="activeRooms"
+        :buildings="buildings"
         :semester="semester"
         :editing="editing"
         :prefill="prefill"

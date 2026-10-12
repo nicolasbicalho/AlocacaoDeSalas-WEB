@@ -12,13 +12,14 @@ import { listTurmas, getTurmaCounts } from '../services/turma.service'
 import { summarizeTurmaRooms } from '../helpers'
 import { listAllocations } from '@/modules/allocation/services/allocation.service'
 import { listRooms } from '@/modules/room/services/room.service'
+import { listProfessors } from '@/modules/professor/services/professor.service'
 import { DAY_OPTIONS, todayISO } from '@/modules/allocation/helpers'
 import { nextDateForWeekday, referenceDate } from '@/modules/dashboard/helpers'
 import { TURMA_CATEGORIES, categoryLabel, categoryPillClass } from '@/shared/constants/turmaCategories'
 import { useProjectContext } from '@/modules/project/projectContext'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
-import type { IAllocation, IRoom, ITurma, TurmaCategory, TurmaCounts, WeekDay } from '@/types'
+import type { IAllocation, IProfessor, IRoom, ITurma, TurmaCategory, TurmaCounts, WeekDay } from '@/types'
 
 type Tab = TurmaCategory | 'todas'
 
@@ -37,6 +38,8 @@ const initialTab = route.query.categoria as Tab
 const tab = ref<Tab>(VALID_TABS.includes(initialTab) ? initialTab : 'todas')
 const search = ref(typeof route.query.q === 'string' ? route.query.q : '')
 const appliedSearch = ref(search.value.trim())
+const professorId = ref(typeof route.query.professor === 'string' ? route.query.professor : '')
+const professors = ref<IProfessor[]>([])
 
 const rows = ref<ITurma[]>([])
 const loading = ref(false)
@@ -100,6 +103,7 @@ async function fetchTurmas() {
       limit,
       ...(appliedSearch.value ? { search: appliedSearch.value } : {}),
       ...(tab.value !== 'todas' ? { category: tab.value } : {}),
+      ...(professorId.value ? { professorId: professorId.value } : {}),
     })
     rows.value = res.data
     total.value = res.pagination.total
@@ -117,9 +121,19 @@ async function fetchCounts() {
     counts.value = await getTurmaCounts({
       projectId,
       ...(appliedSearch.value ? { search: appliedSearch.value } : {}),
+      ...(professorId.value ? { professorId: professorId.value } : {}),
     })
   } catch {
     counts.value = null
+  }
+}
+
+// seletor de professor: todos do cadastro (inclusive desativados, que ainda podem ter turmas)
+async function fetchProfessors() {
+  try {
+    professors.value = (await listProfessors({ limit: 100 })).data
+  } catch {
+    professors.value = []
   }
 }
 
@@ -139,6 +153,7 @@ function syncQuery() {
     query: {
       ...(tab.value !== 'todas' ? { categoria: tab.value } : {}),
       ...(appliedSearch.value ? { q: appliedSearch.value } : {}),
+      ...(professorId.value ? { professor: professorId.value } : {}),
     },
   })
 }
@@ -148,6 +163,14 @@ onMounted(() => {
   fetchTurmas()
   fetchCounts()
   fetchRoomsData()
+  fetchProfessors()
+})
+
+watch(professorId, () => {
+  page.value = 1
+  syncQuery()
+  fetchTurmas()
+  fetchCounts()
 })
 
 watch(tab, () => {
@@ -214,6 +237,14 @@ function onCountUpdated(updated: ITurma) {
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
+        <select
+          v-model="professorId"
+          aria-label="Filtrar por professor"
+          class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+        >
+          <option value="">Todos os professores</option>
+          <option v-for="p in professors" :key="p.id" :value="p.id">{{ p.name }}</option>
+        </select>
         <input
           v-model="search"
           type="search"
@@ -226,7 +257,7 @@ function onCountUpdated(updated: ITurma) {
     </div>
 
     <AppEmptyState
-      v-if="!loading && rows.length === 0 && !appliedSearch && tab === 'todas'"
+      v-if="!loading && rows.length === 0 && !appliedSearch && !professorId && tab === 'todas'"
       title="Nenhuma turma neste projeto"
       :description="auth.isUser ? 'Cadastre a primeira turma do projeto.' : 'Nenhuma turma cadastrada.'"
     >
@@ -240,7 +271,7 @@ function onCountUpdated(updated: ITurma) {
         :columns="columns"
         :rows="rows"
         :loading="loading"
-        :empty-message="appliedSearch ? `Nenhuma turma encontrada para “${appliedSearch}”.` : 'Nenhuma turma nesta categoria.'"
+        :empty-message="appliedSearch ? `Nenhuma turma encontrada para “${appliedSearch}”.` : professorId ? 'Nenhuma turma deste professor nesta categoria.' : 'Nenhuma turma nesta categoria.'"
       >
         <template #cell-name="{ row }">
           <span class="font-medium text-gray-800 dark:text-gray-100">{{ asTurma(row).name }}</span>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { watchDebounced } from '@vueuse/core'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
@@ -8,7 +9,9 @@ import AppButton from '@/shared/components/AppButton.vue'
 import ScheduleEditor from './ScheduleEditor.vue'
 import FeatureCheckboxes from '@/shared/components/FeatureCheckboxes.vue'
 import { TURMA_CATEGORIES } from '@/shared/constants/turmaCategories'
-import type { RoomFeature, TimeSlot, TurmaCategory } from '@/types'
+import { listProfessors } from '@/modules/professor/services/professor.service'
+import { preferenceItems, nameKey } from '@/modules/professor/helpers'
+import type { IProfessor, RoomFeature, TimeSlot, TurmaCategory } from '@/types'
 
 // campos espelham a planilha que o gerente recebe: disciplina, código, horário, setor, professor, anotações
 export interface TurmaValues {
@@ -76,6 +79,46 @@ watch(
     requiredFeatures.value = [...(v.requiredFeatures ?? [])]
     schedule.value = (v.schedule ?? []).map((s) => ({ ...s }))
   },
+)
+
+// autocompletar do professor: escolhe um cadastrado ou digita um nome novo (a API cadastra ao salvar)
+const professorListId = `professors-${Math.random().toString(36).slice(2, 9)}`
+const professorOptions = ref<IProfessor[]>([])
+const professorsLoaded = ref(false)
+
+function mergeProfessors(list: IProfessor[]) {
+  const byId = new Map(professorOptions.value.map((p) => [p.id, p]))
+  for (const p of list) byId.set(p.id, p)
+  professorOptions.value = [...byId.values()]
+}
+
+async function loadProfessors(search?: string) {
+  try {
+    const res = await listProfessors({ active: true, limit: 100, ...(search ? { search } : {}) })
+    mergeProfessors(res.data)
+    professorsLoaded.value = true
+  } catch {
+    // sem a lista, o campo continua aceitando texto livre
+  }
+}
+
+onMounted(() => loadProfessors())
+// institutos com mais de 100 professores: busca pelo que foi digitado
+watchDebounced(
+  () => professor.value,
+  (text) => {
+    const typed = (text ?? '').trim()
+    if (typed.length >= 2 && !matchedProfessor.value) loadProfessors(typed)
+  },
+  { debounce: 300 },
+)
+
+const matchedProfessor = computed(() => {
+  const key = nameKey(professor.value ?? '')
+  return key ? professorOptions.value.find((p) => nameKey(p.name) === key) : undefined
+})
+const isNewProfessor = computed(
+  () => professorsLoaded.value && !matchedProfessor.value && (professor.value ?? '').trim().length >= 2,
 )
 
 const onSubmit = handleSubmit((values) => {
@@ -158,14 +201,29 @@ const textareaClass =
     </fieldset>
 
     <div class="grid grid-cols-2 gap-3">
-      <AppInput
-        v-model="professor"
-        label="Professor"
-        placeholder="Dra. Silva"
-        :error="errors.professor"
-        :disabled="readonly || loading"
-        required
-      />
+      <div class="flex flex-col gap-1">
+        <AppInput
+          v-model="professor"
+          label="Professor"
+          placeholder="Comece a digitar..."
+          :list="professorListId"
+          :error="errors.professor"
+          :disabled="readonly || loading"
+          required
+        />
+        <datalist :id="professorListId">
+          <option v-for="p in professorOptions" :key="p.id" :value="p.name" />
+        </datalist>
+        <p v-if="matchedProfessor" class="text-xs text-gray-500 dark:text-gray-400">
+          <RouterLink :to="`/professors/${matchedProfessor.id}`" class="text-primary-700 hover:underline dark:text-primary-400">
+            Preferências
+          </RouterLink>:
+          {{ preferenceItems(matchedProfessor.preferences).join(' · ') || 'nenhuma' }}
+        </p>
+        <p v-else-if="isNewProfessor && !readonly" class="text-xs text-amber-700 dark:text-amber-400">
+          Professor novo — será cadastrado ao salvar.
+        </p>
+      </div>
       <AppInput
         v-model="sector"
         label="Setor (departamento)"

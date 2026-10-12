@@ -2,7 +2,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { isAxiosError } from 'axios'
-import RoomForm from '../components/RoomForm.vue'
+import RoomForm, { type RoomValues } from '../components/RoomForm.vue'
 import AppButton from '@/shared/components/AppButton.vue'
 import AppSpinner from '@/shared/components/AppSpinner.vue'
 import AppBadge from '@/shared/components/AppBadge.vue'
@@ -11,7 +11,7 @@ import { getRoom, updateRoom, deactivateRoom } from '../services/room.service'
 import { useBuildingContext } from '@/modules/building/buildingContext'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
-import type { IRoom, RoomFeature } from '@/types'
+import type { IRoom } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -38,6 +38,9 @@ const initialValues = computed(() =>
         code: room.value.code,
         capacity: room.value.capacity,
         features: room.value.features,
+        floor: room.value.floor ?? null,
+        boardCount: room.value.boardCount ?? null,
+        corridorEnd: room.value.corridorEnd ?? null,
       }
     : undefined,
 )
@@ -64,7 +67,7 @@ onMounted(async () => {
   }
 })
 
-async function onSubmit(values: { name: string; code: string; capacity: number; features: RoomFeature[] }) {
+async function onSubmit(values: RoomValues) {
   saving.value = true
   try {
     room.value = await updateRoom(roomId, values)

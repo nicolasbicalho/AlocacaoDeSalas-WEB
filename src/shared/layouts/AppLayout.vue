@@ -15,6 +15,7 @@ const navItems = computed(() => [
   ...(auth.isAdmin ? [{ to: '/institutes', label: 'Institutos' }] : []),
   { to: '/projects', label: 'Projetos' },
   { to: '/buildings', label: 'Prédios' },
+  { to: '/professors', label: 'Professores' },
   ...(auth.isAdmin ? [{ to: '/audit', label: 'Auditoria' }] : []),
 ])
 

@@ -10,7 +10,7 @@ import AppBadge from '@/shared/components/AppBadge.vue'
 import { listRooms } from '../services/room.service'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
-import { featureLabel } from '@/shared/constants/roomFeatures'
+import { featureLabel, floorLabel } from '@/shared/constants/roomFeatures'
 import type { IRoom } from '@/types'
 
 const route = useRoute()
@@ -24,6 +24,8 @@ const columns = [
   { key: 'name', label: 'Nome' },
   { key: 'code', label: 'Código' },
   { key: 'capacity', label: 'Capacidade' },
+  { key: 'floor', label: 'Andar' },
+  { key: 'boardCount', label: 'Quadros' },
   { key: 'features', label: 'Características' },
   { key: 'active', label: 'Status' },
   { key: 'actions', label: 'Ações' },
@@ -83,6 +85,17 @@ function changePage(target: number) {
 
     <template v-else>
       <AppTable :columns="columns" :rows="rows" :loading="loading">
+        <template #cell-floor="{ row }">
+          <span class="whitespace-nowrap">
+            {{ asRoom(row).floor != null ? floorLabel(asRoom(row).floor!) : '—' }}
+          </span>
+          <span
+            v-if="asRoom(row).corridorEnd"
+            class="ml-1 whitespace-nowrap rounded-full bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+            title="Fica na extremidade do corredor"
+          >extremidade</span>
+        </template>
+        <template #cell-boardCount="{ row }">{{ asRoom(row).boardCount ?? '—' }}</template>
         <template #cell-features="{ row }">
           <div class="flex flex-wrap gap-1">
             <span

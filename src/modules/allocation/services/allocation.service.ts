@@ -1,5 +1,13 @@
 import api from '@/services/api'
-import type { IAllocation, TimeSlot, AllocationType, EventColor, WeekDay, ApiSuccess } from '@/types'
+import type {
+  IAllocation,
+  TimeSlot,
+  AllocationType,
+  EventColor,
+  WeekDay,
+  RoomSuggestions,
+  ApiSuccess,
+} from '@/types'
 
 /**
  * Recorrente (`weekly`): `turmaId` obrigatório, sem `date`/`title`/`color`.
@@ -54,4 +62,27 @@ export async function moveAllocation(
 
 export async function deleteAllocation(projectId: string, id: string): Promise<void> {
   await api.delete(`/projects/${projectId}/allocations/${id}`)
+}
+
+/**
+ * Salas avaliadas para uma turma num horário: livres e compatíveis primeiro, por melhor encaixe e
+ * preferências do professor. `excludeId` = evento em edição (não conflita consigo mesmo).
+ */
+export async function getRoomSuggestions(
+  projectId: string,
+  params: {
+    turmaId: string
+    type: AllocationType
+    day?: WeekDay
+    date?: string
+    start: string
+    end: string
+    excludeId?: string
+  },
+): Promise<RoomSuggestions> {
+  const { data } = await api.get<ApiSuccess<RoomSuggestions>>(
+    `/projects/${projectId}/allocations/suggestions`,
+    { params },
+  )
+  return data.data
 }

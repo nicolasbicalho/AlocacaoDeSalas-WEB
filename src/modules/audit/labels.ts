@@ -9,6 +9,7 @@ export const ENTITY_LABELS: Record<AuditEntity, string> = {
   room: 'Sala',
   turma: 'Turma',
   allocation: 'Evento (cronograma)',
+  professor: 'Professor',
 }
 
 export const ACTION_LABELS: Record<AuditAction, string> = {

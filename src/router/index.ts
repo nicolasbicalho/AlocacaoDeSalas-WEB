@@ -7,6 +7,7 @@ import { projectRoutes } from '@/modules/project'
 import { buildingRoutes } from '@/modules/building'
 import { roomRoutes } from '@/modules/room'
 import { turmaRoutes } from '@/modules/turma'
+import { professorRoutes } from '@/modules/professor'
 import { auditRoutes } from '@/modules/audit'
 import { useAuthStore } from '@/stores/auth'
 
@@ -31,6 +32,7 @@ const routes: RouteRecordRaw[] = [
   ...buildingRoutes,
   ...roomRoutes,
   ...turmaRoutes,
+  ...professorRoutes,
   ...auditRoutes,
   { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
 ]

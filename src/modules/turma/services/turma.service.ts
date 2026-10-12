@@ -18,6 +18,7 @@ export interface TurmaCreatePayload {
   notes?: string
   /** null = "a definir" */
   studentCount: number | null
+  /** nome; a API associa ao cadastro de professores (ou cria o professor) */
   professor: string
   requiredFeatures: RoomFeature[]
   schedule: TimeSlot[]
@@ -31,13 +32,18 @@ export async function listTurmas(params: {
   limit?: number
   search?: string
   category?: TurmaCategory
+  professorId?: string
 }): Promise<PaginatedResponse<ITurma>> {
   const { data } = await api.get<PaginatedResponse<ITurma>>('/turmas', { params })
   return data
 }
 
 /** Quantidade de turmas do projeto por categoria (abas da lista), respeitando a busca. */
-export async function getTurmaCounts(params: { projectId: string; search?: string }): Promise<TurmaCounts> {
+export async function getTurmaCounts(params: {
+  projectId: string
+  search?: string
+  professorId?: string
+}): Promise<TurmaCounts> {
   const { data } = await api.get<ApiSuccess<TurmaCounts>>('/turmas/counts', { params })
   return data.data
 }
