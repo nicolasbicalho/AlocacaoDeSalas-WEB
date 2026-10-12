@@ -95,7 +95,7 @@ A query é lida uma vez ao carregar e depois limpa da URL (recarregar não reabr
 
 - Breadcrumb: "Projetos / {nome} / Cronograma" + badge de status do projeto.
 - Cartões de estatística do cronograma (eventos, salas usadas, turmas com sala — de N).
-- Botão **"Adicionar evento"** (visível para `user` com projeto não encerrado).
+- Botão **"Adicionar evento"** (visível para `user` com projeto não encerrado) e **"Baixar quadro de horários"** (todos; o mesmo XLSX da aba Turmas — ver [05, seção 5.5](./05-turmas.md#55-quadro-de-horários-download)).
 - Carrega em paralelo: projeto (com `startDate`/`endDate`), turmas, salas e eventos; monta mapas turma/sala para exibir nomes.
 - Estado vazio quando não há eventos.
 

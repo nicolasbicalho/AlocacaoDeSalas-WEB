@@ -29,6 +29,7 @@
     ''                    → ProjectDetailView   [aba Visão geral]
     turmas                → TurmaListView       [aba Turmas]
     turmas/new            → TurmaCreateView     [aba Turmas] — roles: user
+    turmas/import         → TurmaImportView     [aba Turmas] — roles: user (antes de :turmaId)
     turmas/:turmaId       → TurmaDetailView     [aba Turmas]
     allocation            → AllocationView      [aba Cronograma] — edição só user
     reports               → ReportView          [aba Relatórios] — planejado (módulo 08)
