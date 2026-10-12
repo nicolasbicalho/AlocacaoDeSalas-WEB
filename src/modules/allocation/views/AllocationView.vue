@@ -7,6 +7,7 @@ import AppSpinner from '@/shared/components/AppSpinner.vue'
 import AppEmptyState from '@/shared/components/AppEmptyState.vue'
 import AppConfirmDialog from '@/shared/components/AppConfirmDialog.vue'
 import AllocationModal from '../components/AllocationModal.vue'
+import AutoAllocationPanel from '../components/AutoAllocationPanel.vue'
 import { downloadTimetable } from '@/modules/turma/timetable.export'
 import ScheduleGrid from '../components/ScheduleGrid.vue'
 import WeekStrip from '../components/WeekStrip.vue'
@@ -143,6 +144,15 @@ function initialDate(s: { startDate: string; endDate: string }): string {
   const today = todayISO()
   const base = today >= s.startDate && today <= s.endDate ? today : s.startDate
   return firstSchoolDay(base, s.endDate)
+}
+
+// depois da alocação automática: só os eventos mudam (mantém data e filtros)
+async function reloadAllocations() {
+  try {
+    allocations.value = await listAllocations(projectId)
+  } catch {
+    ui.toast({ message: 'Erro ao recarregar o cronograma.', variant: 'error' })
+  }
 }
 
 async function fetchAll() {
@@ -320,6 +330,17 @@ async function confirmDelete() {
           <p class="text-xs text-gray-500 dark:text-gray-400">Turmas com sala</p>
         </div>
       </div>
+
+      <!-- alocação automática (módulo 07): só quem edita o cronograma -->
+      <AutoAllocationPanel
+        v-if="canManage"
+        :project="project"
+        :turmas="activeTurmas"
+        :rooms="rooms"
+        :buildings="buildings"
+        :allocations="allocations"
+        @changed="reloadAllocations"
+      />
 
       <!-- navegação + filtro -->
       <div class="flex flex-wrap items-end justify-between gap-3">

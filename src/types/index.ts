@@ -160,6 +160,8 @@ export interface IAllocation {
   color?: EventColor
   /** presente em todo evento de turma (eventos antigos vêm como 'teorica') */
   role?: AllocationRole
+  /** gerado pela alocação automática; ausente = manual (editar um automático o torna manual) */
+  source?: 'auto'
   createdAt: string
   updatedAt: string
 }
@@ -196,6 +198,58 @@ export interface RoomSuggestions {
   rooms: RoomSuggestion[]
 }
 
+// ---------------- alocação automática (módulo 07) ----------------
+
+export type AutoStrategy = 'gerente' | 'maiores-primeiro'
+
+export type UnallocatedReason =
+  | 'NO_STUDENT_COUNT'
+  | 'NO_ROOM_WITH_FEATURES'
+  | 'NO_ROOM_WITH_CAPACITY'
+  | 'ALL_OCCUPIED'
+  | 'TURMA_BUSY'
+
+export interface AutoMetrics {
+  demands: number
+  allocated: number
+  unallocated: number
+  skippedTurmas: number
+  wastedSeats: number
+  /** 0–1 */
+  averageOccupancy: number
+  preferencesMet: number
+  preferencesTotal: number
+  oversizedRooms: number
+}
+
+export interface AutoPlannedAllocation {
+  turmaId: string
+  role: AllocationRole
+  roomId: string
+  timeSlot: TimeSlot
+  penalty: number
+  preferences: { key: PreferenceKey; status: PreferenceStatus }[]
+  /** só na resposta da aplicação */
+  id?: string
+}
+
+export interface AutoUnallocated {
+  turmaId: string
+  role?: AllocationRole
+  timeSlot?: TimeSlot
+  reason: UnallocatedReason
+}
+
+export interface AutoAllocationResult {
+  strategy: AutoStrategy
+  metrics: AutoMetrics
+  allocations: AutoPlannedAllocation[]
+  unallocated: AutoUnallocated[]
+  removedAuto: number
+}
+
+export type AutoComparison = Record<AutoStrategy, { metrics: AutoMetrics }>
+
 export type AuditEntity =
   | 'auth'
   | 'user'
@@ -216,6 +270,7 @@ export type AuditAction =
   | 'deactivate'
   | 'close'
   | 'import'
+  | 'auto_allocate'
   | 'login'
   | 'login_failed'
   | 'logout'

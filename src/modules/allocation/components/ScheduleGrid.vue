@@ -118,6 +118,7 @@ function subtitle(a: IAllocation): string {
   // turma com aula prática: as duas salas aparecem no mesmo horário, cada uma com o seu papel
   if (turma?.practice) parts.push(ROLE_LABELS[roleOf(a)])
   if (turma?.professor) parts.push(turma.professor)
+  if (a.source === 'auto') parts.push('Automática')
   return parts.join(' · ')
 }
 function onFree(roomId: string, hour: number) {

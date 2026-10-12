@@ -7,6 +7,9 @@ import type {
   WeekDay,
   AllocationRole,
   RoomSuggestions,
+  AutoStrategy,
+  AutoAllocationResult,
+  AutoComparison,
   ApiSuccess,
 } from '@/types'
 
@@ -89,4 +92,36 @@ export async function getRoomSuggestions(
     { params },
   )
   return data.data
+}
+
+// ---------------- alocação automática (módulo 07) ----------------
+
+export interface AutoRunPayload {
+  strategy: AutoStrategy
+  /** refazer: os automáticos atuais são substituídos; os manuais nunca mudam */
+  replaceAuto: boolean
+}
+
+/** Simula: o plano e as métricas, sem gravar. */
+export async function previewAutoAllocation(projectId: string, payload: AutoRunPayload): Promise<AutoAllocationResult> {
+  const { data } = await api.post<ApiSuccess<AutoAllocationResult>>(`/projects/${projectId}/allocations/auto/preview`, payload)
+  return data.data
+}
+
+/** Recalcula no servidor e grava os eventos automáticos. */
+export async function applyAutoAllocation(projectId: string, payload: AutoRunPayload): Promise<AutoAllocationResult> {
+  const { data } = await api.post<ApiSuccess<AutoAllocationResult>>(`/projects/${projectId}/allocations/auto`, payload)
+  return data.data
+}
+
+/** As duas estratégias sobre os mesmos dados (só métricas). */
+export async function compareAutoAllocation(projectId: string, replaceAuto: boolean): Promise<AutoComparison> {
+  const { data } = await api.post<ApiSuccess<AutoComparison>>(`/projects/${projectId}/allocations/auto/compare`, { replaceAuto })
+  return data.data
+}
+
+/** Remove os eventos automáticos do projeto; os manuais ficam. */
+export async function clearAutoAllocation(projectId: string): Promise<number> {
+  const { data } = await api.delete<ApiSuccess<{ removed: number }>>(`/projects/${projectId}/allocations/auto`)
+  return data.data.removed
 }
