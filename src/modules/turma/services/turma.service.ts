@@ -1,11 +1,23 @@
 import api from '@/services/api'
-import type { ITurma, RoomFeature, TimeSlot, ApiSuccess, PaginatedResponse } from '@/types'
+import type {
+  ITurma,
+  RoomFeature,
+  TimeSlot,
+  TurmaCategory,
+  TurmaCounts,
+  ApiSuccess,
+  PaginatedResponse,
+} from '@/types'
 
 export interface TurmaCreatePayload {
   projectId: string
   name: string
-  code?: string
-  studentCount: number
+  code: string
+  category: TurmaCategory
+  sector?: string
+  notes?: string
+  /** null = "a definir" */
+  studentCount: number | null
   professor: string
   requiredFeatures: RoomFeature[]
   schedule: TimeSlot[]
@@ -18,9 +30,16 @@ export async function listTurmas(params: {
   page?: number
   limit?: number
   search?: string
+  category?: TurmaCategory
 }): Promise<PaginatedResponse<ITurma>> {
   const { data } = await api.get<PaginatedResponse<ITurma>>('/turmas', { params })
   return data
+}
+
+/** Quantidade de turmas do projeto por categoria (abas da lista), respeitando a busca. */
+export async function getTurmaCounts(params: { projectId: string; search?: string }): Promise<TurmaCounts> {
+  const { data } = await api.get<ApiSuccess<TurmaCounts>>('/turmas/counts', { params })
+  return data.data
 }
 
 export async function getTurma(id: string): Promise<ITurma> {

@@ -1,4 +1,4 @@
-import type { EventColor, IAllocation, WeekDay } from '@/types'
+import type { EventColor, IAllocation, TurmaCategory, WeekDay } from '@/types'
 
 export const DAY_OPTIONS: { value: WeekDay; label: string; long: string }[] = [
   { value: 'mon', label: 'Seg', long: 'Segunda' },
@@ -176,11 +176,27 @@ export const EVENT_COLORS: { value: EventColor; label: string; classes: ColorCla
 
 export const DEFAULT_EVENT_COLOR: EventColor = 'amber'
 
-// eventos recorrentes usam a cor primária do sistema
-const RECURRING_CLASSES: ColorClasses = {
-  block: 'border-primary-500 bg-primary-100/80 text-primary-900 hover:bg-primary-200/80 dark:bg-primary-900/40 dark:text-primary-100 dark:hover:bg-primary-900/60',
-  sub: 'text-primary-700/90 dark:text-primary-300/80',
-  swatch: 'bg-primary-500',
+// eventos recorrentes usam o tom da categoria da turma (graduação = cor primária do sistema)
+const CATEGORY_CLASSES: Record<TurmaCategory, ColorClasses> = {
+  graduacao: {
+    block: 'border-primary-500 bg-primary-100/80 text-primary-900 hover:bg-primary-200/80 dark:bg-primary-900/40 dark:text-primary-100 dark:hover:bg-primary-900/60',
+    sub: 'text-primary-700/90 dark:text-primary-300/80',
+    swatch: 'bg-primary-500',
+  },
+  pos: {
+    block: 'border-teal-500 bg-teal-100/80 text-teal-900 hover:bg-teal-200/80 dark:bg-teal-900/40 dark:text-teal-100 dark:hover:bg-teal-900/60',
+    sub: 'text-teal-700/90 dark:text-teal-300/80',
+    swatch: 'bg-teal-500',
+  },
+  externa: {
+    block: 'border-slate-500 bg-slate-200/80 text-slate-900 hover:bg-slate-300/80 dark:bg-slate-700/50 dark:text-slate-100 dark:hover:bg-slate-700/70',
+    sub: 'text-slate-600 dark:text-slate-300/80',
+    swatch: 'bg-slate-500',
+  },
+}
+
+export function categoryClasses(category: TurmaCategory | undefined): ColorClasses {
+  return CATEGORY_CLASSES[category ?? 'graduacao']
 }
 
 const COLOR_BY_VALUE = Object.fromEntries(EVENT_COLORS.map((c) => [c.value, c.classes])) as Record<
@@ -188,7 +204,11 @@ const COLOR_BY_VALUE = Object.fromEntries(EVENT_COLORS.map((c) => [c.value, c.cl
   ColorClasses
 >
 
-export function eventClasses(a: Pick<IAllocation, 'type' | 'color'>): ColorClasses {
-  if (a.type === 'weekly') return RECURRING_CLASSES
+/** Recorrente: tom da categoria da turma. Único: a cor escolhida no cadastro. */
+export function eventClasses(
+  a: Pick<IAllocation, 'type' | 'color'>,
+  category?: TurmaCategory,
+): ColorClasses {
+  if (a.type === 'weekly') return categoryClasses(category)
   return COLOR_BY_VALUE[a.color ?? DEFAULT_EVENT_COLOR] ?? COLOR_BY_VALUE[DEFAULT_EVENT_COLOR]
 }

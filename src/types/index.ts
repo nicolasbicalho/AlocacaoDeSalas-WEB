@@ -80,19 +80,36 @@ export interface TimeSlot {
   end: string
 }
 
+/** Separação pedida pelo gerente (espelha `TURMA_CATEGORIES` da API). */
+export type TurmaCategory = 'graduacao' | 'pos' | 'externa'
+
 export interface ITurma {
   id: string
   projectId: string
   instituteId: string
+  /** nome da disciplina */
   name: string
   code?: string
-  studentCount: number
+  category: TurmaCategory
+  /** setor = departamento que oferta a disciplina */
+  sector?: string
+  /** anotações/preferências como vieram da planilha */
+  notes?: string
+  /** null = "a definir" (o número chega depois da planilha) */
+  studentCount: number | null
   professor: string
   requiredFeatures: RoomFeature[]
   schedule: TimeSlot[]
   active: boolean
   createdAt: string
   updatedAt: string
+}
+
+export interface TurmaCounts {
+  total: number
+  graduacao: number
+  pos: number
+  externa: number
 }
 
 /** `weekly` = evento recorrente (sempre de turma); `single` = evento único */

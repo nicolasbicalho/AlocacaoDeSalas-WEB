@@ -15,6 +15,7 @@ import { listRooms } from '@/modules/room/services/room.service'
 import { listBuildings } from '@/modules/building/services/building.service'
 import {
   dayLabel,
+  categoryClasses,
   eventClasses,
   eventsOnDate,
   firstSchoolDay,
@@ -25,7 +26,8 @@ import {
 import { useProjectContext } from '@/modules/project/projectContext'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
-import type { ITurma, IRoom, IBuilding, IAllocation } from '@/types'
+import type { ITurma, IRoom, IBuilding, IAllocation, TurmaCategory } from '@/types'
+import { TURMA_CATEGORIES } from '@/shared/constants/turmaCategories'
 
 const route = useRoute()
 const router = useRouter()
@@ -70,10 +72,21 @@ const gridRooms = computed(() =>
     : activeRooms.value,
 )
 
-// grade: todos os eventos da data (recorrentes do dia da semana + únicos da data)
+// filtro "Mostrar": todas, uma categoria de turma, ou só os eventos únicos
+type ShowFilter = 'todas' | TurmaCategory | 'unicos'
+const showFilter = ref<ShowFilter>('todas')
+
+function matchesShowFilter(a: IAllocation): boolean {
+  if (showFilter.value === 'todas') return true
+  if (showFilter.value === 'unicos') return a.type === 'single'
+  // categoria: eventos (recorrentes ou reposições) de turmas daquela categoria
+  return !!a.turmaId && turmaById.value.get(a.turmaId)?.category === showFilter.value
+}
+
+// grade: eventos da data (recorrentes do dia da semana + únicos da data), conforme o filtro
 const eventsForDate = computed(() =>
   semester.value && selectedDate.value
-    ? eventsOnDate(allocations.value, selectedDate.value, semester.value)
+    ? eventsOnDate(allocations.value, selectedDate.value, semester.value).filter(matchesShowFilter)
     : [],
 )
 
@@ -81,7 +94,7 @@ const countsForWeek = computed(() => {
   const counts: Record<string, number> = {}
   if (!semester.value || !selectedDate.value) return counts
   for (const d of weekDates(selectedDate.value)) {
-    counts[d.date] = eventsOnDate(allocations.value, d.date, semester.value).length
+    counts[d.date] = eventsOnDate(allocations.value, d.date, semester.value).filter(matchesShowFilter).length
   }
   return counts
 })
@@ -287,6 +300,15 @@ async function confirmDelete() {
         />
         <div class="flex flex-wrap items-center gap-2">
           <select
+            v-model="showFilter"
+            aria-label="Mostrar eventos"
+            class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          >
+            <option value="todas">Todos os eventos</option>
+            <option v-for="c in TURMA_CATEGORIES" :key="c.value" :value="c.value">{{ c.plural }}</option>
+            <option value="unicos">Só eventos únicos</option>
+          </select>
+          <select
             v-model="selectedBuilding"
             class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
           >
@@ -316,7 +338,9 @@ async function confirmDelete() {
           @remove="confirmTarget = $event"
         />
         <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
-          <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded-sm bg-primary-500" /> Recorrente</span>
+          <span v-for="c in TURMA_CATEGORIES" :key="c.value" class="flex items-center gap-1.5">
+            <span class="h-3 w-3 rounded-sm" :class="categoryClasses(c.value).swatch" /> {{ c.plural }}
+          </span>
           <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded-sm bg-gradient-to-r from-amber-400 via-rose-500 to-sky-500" /> Único (cor escolhida)</span>
           <span v-if="canManage">Clique numa célula vazia para adicionar; clique num evento para editar.</span>
         </div>

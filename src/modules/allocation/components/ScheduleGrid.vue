@@ -102,6 +102,11 @@ const groups = computed<Group[]>(() => {
   }))
 })
 
+// recorrente: tom da categoria da turma; único: cor escolhida
+function classesOf(a: IAllocation) {
+  return eventClasses(a, a.turmaId ? props.turmaById.get(a.turmaId)?.category : undefined)
+}
+
 function title(a: IAllocation): string {
   if (a.turmaId) return props.turmaById.get(a.turmaId)?.name ?? '—'
   return a.title ?? '—'
@@ -178,7 +183,7 @@ function onFree(roomId: string, hour: number) {
                 :id="`event-${cell.event.id}`"
                 class="group relative flex flex-col justify-center overflow-hidden border-l-4 px-2 py-1 transition-shadow"
                 :class="[
-                  eventClasses(cell.event).block,
+                  classesOf(cell.event).block,
                   canManage ? 'cursor-pointer' : '',
                   highlightId === cell.event.id ? 'z-10 shadow-lg ring-2 ring-inset ring-gray-900 dark:ring-white' : '',
                 ]"
@@ -187,7 +192,7 @@ function onFree(roomId: string, hour: number) {
                 @click="canManage && emit('open', cell.event)"
               >
                 <p class="truncate text-xs font-semibold">{{ title(cell.event) }}</p>
-                <p class="truncate text-[10px]" :class="eventClasses(cell.event).sub">{{ subtitle(cell.event) }}</p>
+                <p class="truncate text-[10px]" :class="classesOf(cell.event).sub">{{ subtitle(cell.event) }}</p>
                 <button
                   v-if="canManage"
                   type="button"

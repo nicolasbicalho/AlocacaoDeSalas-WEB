@@ -54,6 +54,7 @@ const coveragePercent = computed(() =>
 )
 const idle = computed(() => idleRooms(data.value?.rooms ?? [], data.value?.allocations ?? []))
 const activeTurmas = computed(() => (data.value?.turmas ?? []).filter((t) => t.active))
+const withoutCount = computed(() => activeTurmas.value.filter((t) => t.studentCount == null))
 const activeRooms = computed(() => (data.value?.rooms ?? []).filter((r) => r.active))
 
 const upcoming = computed(() =>
@@ -191,13 +192,26 @@ const shortDay = (d: Parameters<typeof dayLabel>[0]) => dayLabel(d).slice(0, 3)
         </p>
 
         <p
-          v-else-if="cov.pending.length === 0 && cov.withoutSchedule.length === 0"
+          v-else-if="cov.pending.length === 0 && cov.withoutSchedule.length === 0 && withoutCount.length === 0"
           class="flex items-center gap-2 text-sm text-green-700 dark:text-green-400"
         >
           ✓ Todos os horários das turmas já têm sala.
         </p>
 
         <ul v-else class="flex flex-col gap-1">
+          <!-- o nº de alunos chega depois da planilha: sem ele a capacidade não pode ser conferida -->
+          <li v-if="withoutCount.length">
+            <RouterLink
+              :to="`/projects/${project.id}/turmas`"
+              class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-700 transition-colors hover:bg-amber-50 dark:text-gray-200 dark:hover:bg-amber-950/30"
+              title="Preencher o nº de alunos na tabela de turmas"
+            >
+              <span class="text-amber-500" aria-hidden="true">⚠</span>
+              <span class="font-medium">{{ withoutCount.length }} turma(s)</span>
+              <span class="text-gray-500 dark:text-gray-400">sem nº de alunos</span>
+              <span class="ml-auto text-xs text-primary-700 dark:text-primary-400">Preencher →</span>
+            </RouterLink>
+          </li>
           <li v-for="p in cov.pending.slice(0, PENDING_SHOWN)" :key="`${p.turma.id}-${p.slot.day}-${p.slot.start}`">
             <RouterLink
               :to="pendingLink(p)"

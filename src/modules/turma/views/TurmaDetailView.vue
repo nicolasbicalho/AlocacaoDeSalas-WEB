@@ -35,7 +35,10 @@ const initialValues = computed(() =>
   turma.value
     ? {
         name: turma.value.name,
-        code: turma.value.code,
+        code: turma.value.code ?? '',
+        category: turma.value.category,
+        sector: turma.value.sector,
+        notes: turma.value.notes,
         studentCount: turma.value.studentCount,
         professor: turma.value.professor,
         requiredFeatures: turma.value.requiredFeatures,
