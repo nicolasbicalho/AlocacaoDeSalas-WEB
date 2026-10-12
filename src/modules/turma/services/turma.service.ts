@@ -1,4 +1,5 @@
 import api from '@/services/api'
+import type { ImportRowPayload } from '../import/mapping'
 import type {
   ITurma,
   RoomFeature,
@@ -67,5 +68,57 @@ export async function updateTurma(id: string, payload: TurmaUpdatePayload): Prom
 
 export async function deactivateTurma(id: string): Promise<ITurma> {
   const { data } = await api.patch<ApiSuccess<ITurma>>(`/turmas/${id}/deactivate`)
+  return data.data
+}
+
+// ---------------- importação da planilha (fase 4) ----------------
+
+export type ImportAction = 'create' | 'update' | 'unchanged' | 'error'
+
+export interface ImportIssue {
+  field: 'name' | 'code' | 'schedule' | 'sector' | 'professor' | 'notes' | 'studentCount' | 'category'
+  code: string
+  message: string
+  severity: 'error' | 'warning'
+}
+
+export interface ImportRowResult {
+  line: number
+  action: ImportAction
+  code?: string
+  name?: string
+  category?: TurmaCategory
+  sector?: string
+  notes?: string
+  professor?: string
+  professorStatus?: 'existing' | 'new'
+  studentCount?: number | null
+  schedule?: TimeSlot[]
+  changes: string[]
+  issues: ImportIssue[]
+  turmaId?: string
+}
+
+export interface ImportResult {
+  summary: Record<ImportAction, number>
+  rows: ImportRowResult[]
+}
+
+export interface ImportPayload {
+  projectId: string
+  defaultCategory: TurmaCategory
+  /** linhas da planilha, com as células como texto */
+  rows: ImportRowPayload[]
+}
+
+/** Prévia: o que a importação faria, linha a linha, sem gravar. */
+export async function previewImport(payload: ImportPayload): Promise<ImportResult> {
+  const { data } = await api.post<ApiSuccess<ImportResult>>('/turmas/import/preview', payload)
+  return data.data
+}
+
+/** Aplica as linhas novas e as alteradas; as com erro ficam de fora. */
+export async function applyImport(payload: ImportPayload): Promise<ImportResult> {
+  const { data } = await api.post<ApiSuccess<ImportResult>>('/turmas/import', payload)
   return data.data
 }

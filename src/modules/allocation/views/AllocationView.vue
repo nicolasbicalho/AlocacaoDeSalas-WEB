@@ -7,6 +7,7 @@ import AppSpinner from '@/shared/components/AppSpinner.vue'
 import AppEmptyState from '@/shared/components/AppEmptyState.vue'
 import AppConfirmDialog from '@/shared/components/AppConfirmDialog.vue'
 import AllocationModal from '../components/AllocationModal.vue'
+import { downloadTimetable } from '@/modules/turma/timetable.export'
 import ScheduleGrid from '../components/ScheduleGrid.vue'
 import WeekStrip from '../components/WeekStrip.vue'
 import { listAllocations, deleteAllocation } from '../services/allocation.service'
@@ -222,6 +223,19 @@ async function goToEvent(a: IAllocation) {
   highlightTimer = setTimeout(() => (highlightId.value = null), 2200)
 }
 
+const downloading = ref(false)
+async function onDownloadTimetable() {
+  if (!project.value) return
+  downloading.value = true
+  try {
+    await downloadTimetable(project.value)
+  } catch {
+    ui.toast({ message: 'Não foi possível gerar o quadro de horários.', variant: 'error' })
+  } finally {
+    downloading.value = false
+  }
+}
+
 function openCreate(pf?: { turmaId?: string; roomId?: string; start?: string; end?: string; role?: AllocationRole }) {
   editing.value = null
   prefill.value = { date: selectedDate.value, ...pf }
@@ -332,6 +346,9 @@ async function confirmDelete() {
             <option value="">Todos os prédios</option>
             <option v-for="b in buildings" :key="b.id" :value="b.id">{{ b.name }}</option>
           </select>
+          <AppButton variant="secondary" :loading="downloading" title="Quadro semanal, lista de turmas e ocupação das salas (XLSX)" @click="onDownloadTimetable">
+            Baixar quadro de horários
+          </AppButton>
           <AppButton v-if="canManage" @click="openCreate()">Adicionar evento</AppButton>
         </div>
       </div>

@@ -20,6 +20,7 @@ export const ACTION_LABELS: Record<AuditAction, string> = {
   activate: 'Ativação',
   deactivate: 'Desativação',
   close: 'Encerramento',
+  import: 'Importação',
   login: 'Login',
   login_failed: 'Login com falha',
   logout: 'Logout',
@@ -44,6 +45,7 @@ export function actionVariant(action: AuditAction): BadgeVariant {
       return 'warning'
     case 'update':
     case 'move':
+    case 'import':
       return 'info'
     default:
       return 'neutral'

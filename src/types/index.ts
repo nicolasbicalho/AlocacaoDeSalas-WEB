@@ -215,6 +215,7 @@ export type AuditAction =
   | 'activate'
   | 'deactivate'
   | 'close'
+  | 'import'
   | 'login'
   | 'login_failed'
   | 'logout'

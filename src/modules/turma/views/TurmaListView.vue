@@ -10,6 +10,7 @@ import AppBadge from '@/shared/components/AppBadge.vue'
 import StudentCountCell from '../components/StudentCountCell.vue'
 import { listTurmas, getTurmaCounts } from '../services/turma.service'
 import { summarizeTurmaRooms } from '../helpers'
+import { downloadTimetable } from '../timetable.export'
 import { listAllocations } from '@/modules/allocation/services/allocation.service'
 import { listRooms } from '@/modules/room/services/room.service'
 import { listProfessors } from '@/modules/professor/services/professor.service'
@@ -208,6 +209,19 @@ function changePage(target: number) {
   fetchTurmas()
 }
 
+const downloading = ref(false)
+async function onDownloadTimetable() {
+  if (!project.value) return
+  downloading.value = true
+  try {
+    await downloadTimetable(project.value)
+  } catch {
+    ui.toast({ message: 'Não foi possível gerar o quadro de horários.', variant: 'error' })
+  } finally {
+    downloading.value = false
+  }
+}
+
 function onCountUpdated(updated: ITurma) {
   const idx = rows.value.findIndex((t) => t.id === updated.id)
   if (idx >= 0) rows.value.splice(idx, 1, updated)
@@ -263,6 +277,12 @@ function onCountUpdated(updated: ITurma) {
           aria-label="Buscar turmas"
           class="w-80 max-w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
         />
+        <AppButton variant="secondary" :loading="downloading" title="Quadro semanal, lista de turmas e ocupação das salas (XLSX)" @click="onDownloadTimetable">
+          Baixar quadro de horários
+        </AppButton>
+        <AppButton v-if="auth.isUser" variant="secondary" @click="router.push(`/projects/${projectId}/turmas/import`)">
+          Importar planilha
+        </AppButton>
         <AppButton v-if="auth.isUser" @click="router.push(`/projects/${projectId}/turmas/new`)">Nova turma</AppButton>
       </div>
     </div>
@@ -273,7 +293,12 @@ function onCountUpdated(updated: ITurma) {
       :description="auth.isUser ? 'Cadastre a primeira turma do projeto.' : 'Nenhuma turma cadastrada.'"
     >
       <template #action>
-        <AppButton v-if="auth.isUser" @click="router.push(`/projects/${projectId}/turmas/new`)">Nova turma</AppButton>
+        <div class="flex gap-2">
+          <AppButton v-if="auth.isUser" variant="secondary" @click="router.push(`/projects/${projectId}/turmas/import`)">
+            Importar planilha
+          </AppButton>
+          <AppButton v-if="auth.isUser" @click="router.push(`/projects/${projectId}/turmas/new`)">Nova turma</AppButton>
+        </div>
       </template>
     </AppEmptyState>
 

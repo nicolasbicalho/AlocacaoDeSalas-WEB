@@ -77,6 +77,7 @@ const crumbs = computed<Crumb[]>(() => {
   if (section.value === 'turmas') {
     items.push({ label: 'Turmas', to: `${base.value}/turmas` })
     if (route.meta.leaf === 'new') items.push({ label: 'Nova turma' })
+    if (route.meta.leaf === 'import') items.push({ label: 'Importar planilha' })
     if (route.meta.leaf === 'detail') items.push({ label: leafLabel.value || '…' })
   }
   if (section.value === 'allocation') items.push({ label: 'Cronograma' })

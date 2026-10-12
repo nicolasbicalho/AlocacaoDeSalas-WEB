@@ -19,7 +19,7 @@ declare module 'vue-router' {
     /** aba ativa dentro de um shell de contexto (projeto ou prédio) */
     section?: 'overview' | 'turmas' | 'allocation' | 'rooms'
     /** tipo da página-folha, usado no breadcrumb do shell */
-    leaf?: 'new' | 'detail'
+    leaf?: 'new' | 'detail' | 'import'
   }
 }
 

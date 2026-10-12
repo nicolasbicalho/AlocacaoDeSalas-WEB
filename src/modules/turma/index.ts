@@ -13,6 +13,12 @@ export const turmaProjectChildren: RouteRecordRaw[] = [
     meta: { requiresAuth: true, roles: ['user'], section: 'turmas', leaf: 'new' },
   },
   {
+    // antes de 'turmas/:turmaId', senão "import" seria lido como id
+    path: 'turmas/import',
+    component: () => import('./views/TurmaImportView.vue'),
+    meta: { requiresAuth: true, roles: ['user'], section: 'turmas', leaf: 'import' },
+  },
+  {
     path: 'turmas/:turmaId',
     component: () => import('./views/TurmaDetailView.vue'),
     meta: { requiresAuth: true, section: 'turmas', leaf: 'detail' },
