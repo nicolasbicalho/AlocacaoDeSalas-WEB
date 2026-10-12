@@ -8,7 +8,7 @@
 
 > **Feedback do gerente (2026-10) — fase 1 implementada:** filtro **"Mostrar"** (todos / graduação / pós-graduação / externas / só eventos únicos) e legenda por categoria: eventos **recorrentes** usam o tom da categoria da turma (graduação = azul, pós = verde-água, externa = cinza); **únicos** mantêm a cor escolhida e o selo "Único". Os contadores da faixa da semana seguem o filtro.
 > **Fase 2 implementada:** [sugestão de salas](#sugestão-de-salas) no modal — livres, compatíveis e ordenadas por melhor encaixe e pelas preferências do professor.
-> **Planejado:** turmas com sala de prática simultânea (fase 3). Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+> **Fase 3 implementada:** turmas com **aula prática no mesmo horário** — o evento tem papel (teórica/prática); a grade mostra as duas salas da turma no mesmo horário, cada uma com o seu papel. Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
 
 ---
 
@@ -62,6 +62,7 @@ interface IAllocation {
   timeSlot: { day: WeekDay; start: string; end: string }
   type: AllocationType
   date?: string           // 'YYYY-MM-DD', só em único
+  role?: 'teorica' | 'pratica'  // presente em todo evento de turma (eventos antigos vêm como 'teorica')
   createdAt: string
   updatedAt: string
 }
@@ -84,6 +85,7 @@ Acesso a partir de `ProjectDetailView` pelo botão **"Ver cronograma"** e dos li
 | `event=<id>` | leva a grade até o evento único (data dele, todos os prédios) e o destaca |
 | `date=YYYY-MM-DD` | seleciona a data (se estiver no semestre) |
 | `turma=<id>&start=HH:MM&end=HH:MM` | abre o modal de criação já com turma, dia da semana (da data) e horário — só para `user` |
+| `role=pratica` | (com `turma`) abre o modal já na **prática** — usado pelos atalhos de um horário que só falta a sala de prática |
 
 A query é lida uma vez ao carregar e depois limpa da URL (recarregar não reabre o modal).
 
@@ -123,13 +125,14 @@ A query é lida uma vez ao carregar e depois limpa da URL (recarregar não reabr
 - **Único:** data (dentro do semestre; domingo barrado no cliente e no servidor; dia da semana derivado e exibido), sala, início e fim, e **exatamente um** entre turma (ex.: reposição) e título livre (2–120 caracteres, ex.: "Palestra de IA").
 - **Paleta de cores:** quando o tipo é "Único", aparece uma paleta de amostras de cor (seleção única) com `EVENT_COLORS` — `amber` (padrão), `emerald`, `rose`, `violet`, `sky`, `orange`.
 - Em modo **mover**, a turma fica fixa (muda sala/horário/tipo/data/cor; o título só para evento de texto livre) e chama `PATCH`. Evento de texto livre não pode virar recorrente (`ALLOCATION_WEEKLY_REQUIRES_TURMA`).
-- Ordem dos campos: tipo → turma (ou título) → dia/data → início e fim → **salas sugeridas** → sala → cor (único). A sugestão depende da turma e do horário, por isso vem depois deles.
+- **Sala para a aula** (fase 3): quando a turma escolhida tem aula prática, o modal pergunta **Teórica** ou **Prática** (padrão teórica; na edição, o papel do evento). O papel vai no payload (`role`) e na sugestão de salas; conflito do mesmo papel mostra "A turma já tem a aula teórica/prática nesse horário."
+- Ordem dos campos: tipo → turma (ou título) → papel (se houver prática) → dia/data → início e fim → **salas sugeridas** → sala → cor (único). A sugestão depende da turma e do horário, por isso vem depois deles.
 - Erros exibidos inline no modal: conflito de sala, conflito de turma, data fora do semestre (`ALLOCATION_DATE_OUT_OF_RANGE`), dados inválidos, projeto encerrado.
 
 ### Sugestão de salas
 
 Quando o evento é de **turma** e o horário é válido, o modal consulta `GET …/allocations/suggestions` (debounce de 250 ms; na edição, com `excludeId` do próprio evento) e mostra o painel **"Salas sugeridas"**:
-- cabeçalho com o nº de alunos (ou "a definir") e as características exigidas; linha "{professor} prefere: …" quando há preferências;
+- cabeçalho "Salas sugeridas · teórica/prática" (turma com aula prática), o nº de alunos (ou "a definir") e as características exigidas **pelo papel** (na prática, as de `practice`); linha "{professor} prefere: …" quando há preferências;
 - até **4 salas livres que servem** (comportam a turma inteira e têm as características), na ordem da API: nome · prédio, "50 lugares · sobram 5" e selos das preferências — verde ✓ atendida, vermelho ✗ não atendida, cinza "?" sala sem o dado;
 - clicar numa sugestão escolhe a sala; "Fora da lista: …" resume as demais (mais que servem, livres que não servem, ocupadas); sem nenhuma que sirva, um aviso;
 - **pré-seleção:** ao criar sem sala definida (ex.: atalho "Alocar →"), a melhor sugestão vem selecionada até o gerente escolher outra; sala vinda da célula clicada ou da edição não é trocada.
@@ -144,7 +147,7 @@ GET    /projects/:projectId/allocations                 # cronograma
 POST   /projects/:projectId/allocations                 # criar (turmaId | title, roomId, timeSlot, type, date?, color?)
 PATCH  /projects/:projectId/allocations/:id             # mover/editar (roomId, timeSlot, type, date?, title?, color?)
 DELETE /projects/:projectId/allocations/:id             # remover
-GET    /projects/:projectId/allocations/suggestions     # salas sugeridas (turmaId, type, day|date, start, end, excludeId?)
+GET    /projects/:projectId/allocations/suggestions     # salas sugeridas (turmaId, role, type, day|date, start, end, excludeId?)
 ```
 
 ---
@@ -167,6 +170,8 @@ GET    /projects/:projectId/allocations/suggestions     # salas sugeridas (turma
 - [x] Modal mostra as salas sugeridas (livres e compatíveis, com selos das preferências do professor); clicar escolhe a sala
 - [x] Ao criar sem sala definida, a melhor sugestão vem pré-selecionada; na edição, o próprio evento não ocupa a sala
 - [x] Sala escolhida que não comporta, não tem as características ou está ocupada gera aviso no modal
+- [x] Turma com aula prática: o modal pergunta o papel (teórica/prática) e a sugestão usa os requisitos do papel
+- [x] Grade mostra a teórica e a prática da turma no mesmo horário, com "Teórica"/"Prática" no subtítulo; a lista de únicos indica o papel da reposição
 
 ---
 

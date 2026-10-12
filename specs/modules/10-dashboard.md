@@ -54,15 +54,15 @@ modules/dashboard/
    - antes do início: "O semestre começa em *N* dia(s)";
    - durante: "Semana *X* de *Y*" + barra de progresso;
    - depois do fim: "O semestre terminou há *N* dia(s). Encerre o projeto…".
-2. **Progresso da alocação:** "*C* de *T* horários de turma já têm sala" + barra (verde a 100%). Contadores: turmas ativas, salas ativas e **salas sem aula fixa** (sem nenhum evento recorrente).
+2. **Progresso da alocação:** "*C* de *T* horários de turma já têm sala" (turma com aula prática conta **duas** salas por horário — a teórica e a de prática; o texto avisa quando há turmas assim) + barra (verde a 100%). Contadores: turmas ativas, salas ativas e **salas sem aula fixa** (sem nenhum evento recorrente).
 3. **Pendências** (clicáveis):
-   - cada horário da grade de uma turma sem sala → **Alocar →**: abre o cronograma na próxima data daquele dia da semana, com o modal já preenchido (turma, dia, início e fim — falta só a sala);
+   - cada horário da grade de uma turma sem sala → **Alocar →** (com aula prática: "sem sala teórica" ou "sem sala de prática", e o link abre o modal no papel certo): abre o cronograma na próxima data daquele dia da semana, com o modal já preenchido (turma, dia, início e fim — falta só a sala);
    - turmas sem horários na grade → **Editar →** (detalhe da turma);
    - sem pendências: "✓ Todos os horários das turmas já têm sala".
 4. **Próximos eventos únicos:** até 5, a partir de hoje (ou do início do semestre, se ainda não começou), com a cor do evento; o clique leva a grade até o evento e o destaca.
 
 ### Regra de cobertura
-Um horário `{ day, start, end }` da grade da turma está **coberto** quando existe um evento **recorrente** da própria turma no mesmo dia da semana que abrange o horário inteiro (`evento.start ≤ start` e `evento.end ≥ end`). Eventos únicos não contam — reposições não resolvem a grade semanal. Turmas inativas são ignoradas.
+Um horário `{ day, start, end }` da grade da turma está **coberto** quando existe um evento **recorrente** da própria turma no mesmo dia da semana que abrange o horário inteiro (`evento.start ≤ start` e `evento.end ≥ end`). Eventos únicos não contam — reposições não resolvem a grade semanal. Turmas inativas são ignoradas. **Fase 3:** a cobertura é por papel — numa turma com `practice`, o horário precisa de um evento teórico e de um prático (`slotCovered`, em `modules/allocation/helpers.ts`); eventos sem papel contam como teóricos.
 
 ---
 
@@ -104,6 +104,7 @@ Os links do painel usam query params lidos pela `AllocationView` (ver Módulo 6)
 - [x] Card do projeto mostra o período e o andamento do semestre (antes / durante / depois)
 - [x] Progresso da alocação conta os horários da grade das turmas cobertos por evento recorrente
 - [x] Pendência "sem sala" abre o cronograma com o modal preenchido para aquele horário
+- [x] Turma com aula prática: a cobertura conta a sala teórica e a de prática, e a pendência diz qual falta
 - [x] Próximo evento único leva a grade até o evento, com destaque
 - [x] Admin vê contadores, institutos ativos sem projeto ativo e as últimas ações da auditoria
 - [x] Pendência "turmas sem nº de alunos" leva à aba Turmas
