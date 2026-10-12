@@ -6,6 +6,8 @@
 
 > **Ordem de desenvolvimento:** implementado **após** a alocação manual (Módulo 6). Reutiliza a entidade **evento** e a visão de **cronograma** definidas lá — aqui um algoritmo gera eventos em lote.
 
+> **Planejado — feedback do gerente (2026-10):** critérios e ordem de processamento revistos ("exigências raras primeiro, depois turmas menores primeiro"). Fase 5 do [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+
 ---
 
 ## Visão Geral

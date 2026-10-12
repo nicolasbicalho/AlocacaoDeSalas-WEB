@@ -7,6 +7,11 @@ Este diretório contém todas as especificações do projeto frontend seguindo o
 ### Produto
 - [Visão Geral](./overview.md)
 
+### Levantamentos e Planos
+Ficam no repositório da API (valem para os dois projetos):
+- [Levantamento — conversa com o gerente que aloca as salas (2026-10-12)](../../AlocacaoDeSalas-API/specs/research/2026-10-12-entrevista-gerente.md)
+- [Plano — mudanças a partir do feedback do gerente](../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md) `draft`
+
 ### Arquitetura e Convenções
 - [Arquitetura Geral](./architecture.md)
 - [Componentes de UI Compartilhados](./shared/ui-components.md)

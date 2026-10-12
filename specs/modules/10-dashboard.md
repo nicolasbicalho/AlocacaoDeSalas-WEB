@@ -4,6 +4,8 @@
 **Depende de:** Módulo 3 (Projects), Módulo 5 (Turmas), Módulo 6 (Alocação Manual e Cronograma), Módulo 9 (Auditoria)
 **API correspondente:** nenhuma específica — compõe endpoints já existentes (ver 10.3)
 
+> **Planejado — feedback do gerente (2026-10):** nova pendência "turmas sem nº de alunos" (o número chega depois da planilha). Fase 1 do [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+
 ---
 
 ## Visão Geral

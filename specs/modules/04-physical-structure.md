@@ -4,6 +4,8 @@
 **Depende de:** Módulo 1 (Auth), Módulo 2 (Institutes)
 **API correspondente:** [`AlocacaoDeSalas-API/specs/modules/04-physical-structure.md`](../../../AlocacaoDeSalas-API/specs/modules/04-physical-structure.md)
 
+> **Planejado — feedback do gerente (2026-10):** formulário de sala com o catálogo revisto (sai projetor/ar-condicionado, entra câmera) e campos de andar, nº de quadros e extremidade do corredor. Fase 2 do [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+
 ---
 
 ## Visão Geral

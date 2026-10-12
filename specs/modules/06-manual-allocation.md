@@ -6,6 +6,8 @@
 
 > **Ordem de desenvolvimento:** a alocação **manual é implementada antes** da automática (Módulo 7). Ela introduz a entidade **evento** e a visão de **cronograma**, que a alocação automática depois preencherá em lote.
 
+> **Planejado — feedback do gerente (2026-10):** filtro e legenda por categoria (graduação, pós, externa; únicos mantêm a própria cor) na fase 1, e **sugestão de salas** no modal — livres, compatíveis e ordenadas por melhor encaixe e preferências — na fase 2. Ver o [plano](../../../AlocacaoDeSalas-API/specs/plans/2026-10-plano-feedback-gerente.md).
+
 ---
 
 ## Visão Geral
