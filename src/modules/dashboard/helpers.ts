@@ -1,5 +1,5 @@
-import { addDays, clampDate, mondayOf, weekdayFromDate } from '@/modules/allocation/helpers'
-import type { IAllocation, IRoom, ITurma, TimeSlot, WeekDay } from '@/types'
+import { addDays, clampDate, mondayOf, rolesOf, slotCovered, weekdayFromDate } from '@/modules/allocation/helpers'
+import type { AllocationRole, IAllocation, IRoom, ITurma, TimeSlot, WeekDay } from '@/types'
 
 const DAY_ORDER: Record<WeekDay, number> = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5 }
 
@@ -31,12 +31,14 @@ export function semesterProgress(start: string, end: string, today: string): Sem
 export interface PendingSlot {
   turma: ITurma
   slot: TimeSlot
+  /** na turma com aula prática, cada horário precisa da sala teórica e da de prática */
+  role: AllocationRole
 }
 
 export interface Coverage {
-  /** horários declarados na grade das turmas ativas */
+  /** salas necessárias na grade das turmas ativas: 1 por horário, 2 se a turma tem aula prática */
   total: number
-  /** desses, quantos já têm um evento recorrente da turma cobrindo o horário inteiro */
+  /** dessas, quantas já têm um evento recorrente da turma (no papel) cobrindo o horário inteiro */
   covered: number
   pending: PendingSlot[]
   /** turmas ativas sem nenhum horário na grade (não dá para alocar) */
@@ -45,7 +47,8 @@ export interface Coverage {
 
 /**
  * Um horário da grade da turma está coberto quando existe um evento recorrente da
- * própria turma, no mesmo dia da semana, que abrange o horário inteiro.
+ * própria turma, no mesmo dia da semana, que abrange o horário inteiro — em cada papel
+ * que a turma exige (teórica e, com aula prática, prática).
  */
 export function coverage(turmas: ITurma[], allocations: IAllocation[]): Coverage {
   const weeklyByTurma = new Map<string, IAllocation[]>()
@@ -68,12 +71,11 @@ export function coverage(turmas: ITurma[], allocations: IAllocation[]): Coverage
     }
     const events = weeklyByTurma.get(turma.id) ?? []
     for (const slot of turma.schedule) {
-      total++
-      const ok = events.some(
-        (e) => e.timeSlot.day === slot.day && e.timeSlot.start <= slot.start && e.timeSlot.end >= slot.end,
-      )
-      if (ok) covered++
-      else pending.push({ turma, slot })
+      for (const role of rolesOf(turma)) {
+        total++
+        if (slotCovered(events, slot, role)) covered++
+        else pending.push({ turma, slot, role })
+      }
     }
   }
 
@@ -81,7 +83,8 @@ export function coverage(turmas: ITurma[], allocations: IAllocation[]): Coverage
     (a, b) =>
       DAY_ORDER[a.slot.day] - DAY_ORDER[b.slot.day] ||
       a.slot.start.localeCompare(b.slot.start) ||
-      a.turma.name.localeCompare(b.turma.name),
+      a.turma.name.localeCompare(b.turma.name) ||
+      a.role.localeCompare(b.role),
   )
   return { total, covered, pending, withoutSchedule }
 }

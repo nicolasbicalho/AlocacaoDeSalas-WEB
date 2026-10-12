@@ -5,6 +5,7 @@ import type {
   AllocationType,
   EventColor,
   WeekDay,
+  AllocationRole,
   RoomSuggestions,
   ApiSuccess,
 } from '@/types'
@@ -21,6 +22,8 @@ export interface AllocationCreatePayload {
   type: AllocationType
   date?: string
   color?: EventColor
+  /** só em evento de turma; prática exige aula prática na turma */
+  role?: AllocationRole
 }
 
 /** A turma do evento não muda; `title` só vale para evento de texto livre. */
@@ -72,6 +75,7 @@ export async function getRoomSuggestions(
   projectId: string,
   params: {
     turmaId: string
+    role: AllocationRole
     type: AllocationType
     day?: WeekDay
     date?: string

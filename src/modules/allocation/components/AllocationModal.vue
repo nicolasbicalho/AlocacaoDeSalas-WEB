@@ -17,6 +17,7 @@ import {
   weekdayFromDate,
   dayLabel,
   formatDateBR,
+  roleOf,
 } from '../helpers'
 import { preferenceBadge, capacityText, roomWarnings, type Tone } from '../suggestions'
 import { preferenceItems } from '@/modules/professor/helpers'
@@ -30,6 +31,7 @@ import type {
   EventColor,
   WeekDay,
   RoomSuggestions,
+  AllocationRole,
 } from '@/types'
 
 const props = defineProps<{
@@ -43,7 +45,15 @@ const props = defineProps<{
   /** quando presente, o modal edita/move este evento */
   editing?: IAllocation | null
   /** valores iniciais ao criar (ex.: clique numa célula livre da grade) */
-  prefill?: { turmaId?: string; roomId?: string; date?: string; start?: string; end?: string } | null
+  prefill?: {
+    turmaId?: string
+    roomId?: string
+    date?: string
+    start?: string
+    end?: string
+    /** atalho "Alocar" de um horário que só falta a prática */
+    role?: AllocationRole
+  } | null
 }>()
 
 const emit = defineEmits<{ saved: [IAllocation]; close: [] }>()
@@ -64,6 +74,8 @@ const date = ref('')
 const start = ref('08:00')
 const end = ref('10:00')
 const color = ref<EventColor>(DEFAULT_EVENT_COLOR)
+// papel: numa turma com aula prática, teoria e prática acontecem no mesmo horário, em salas diferentes
+const role = ref<AllocationRole>('teorica')
 
 const saving = ref(false)
 const error = ref('')
@@ -89,6 +101,7 @@ function resetFromProps() {
     start.value = a.timeSlot.start
     end.value = a.timeSlot.end
     color.value = a.color ?? DEFAULT_EVENT_COLOR
+    role.value = roleOf(a)
     return
   }
   const p = props.prefill
@@ -104,12 +117,19 @@ function resetFromProps() {
   start.value = p?.start ?? '08:00'
   end.value = p?.end ?? '10:00'
   color.value = DEFAULT_EVENT_COLOR
+  role.value = p?.role ?? 'teorica'
 }
 
 watch(() => props.open, (open) => { if (open) resetFromProps() })
 
 // recorrente é sempre de turma
 watch(type, (t) => { if (t === 'weekly') link.value = 'turma' })
+
+const linkedToTurma = computed(() => type.value === 'weekly' || link.value === 'turma')
+const selectedTurma = computed(() => props.turmas.find((t) => t.id === turmaId.value))
+const turmaHasPractice = computed(() => linkedToTurma.value && !!selectedTurma.value?.practice)
+// turma sem aula prática só tem a parte teórica
+watch(turmaHasPractice, (has) => { if (!has) role.value = 'teorica' })
 
 const validationMessage = computed(() => {
   if (!roomId.value) return 'Selecione uma sala.'
@@ -154,11 +174,11 @@ const suggestionParams = computed(() => {
   const hasTurma = type.value === 'weekly' || link.value === 'turma'
   if (!hasTurma || !turmaId.value || !start.value || !end.value || start.value >= end.value) return null
   if (type.value === 'weekly') {
-    return { turmaId: turmaId.value, type: 'weekly' as const, day: day.value, start: start.value, end: end.value, ...exclude() }
+    return { turmaId: turmaId.value, role: role.value, type: 'weekly' as const, day: day.value, start: start.value, end: end.value, ...exclude() }
   }
   if (!date.value || !derivedDay.value) return null
   if (date.value < props.semester.startDate || date.value > props.semester.endDate) return null
-  return { turmaId: turmaId.value, type: 'single' as const, date: date.value, start: start.value, end: end.value, ...exclude() }
+  return { turmaId: turmaId.value, role: role.value, type: 'single' as const, date: date.value, start: start.value, end: end.value, ...exclude() }
 })
 
 async function fetchSuggestions() {
@@ -228,10 +248,11 @@ function buildPayload(): AllocationCreatePayload {
       roomId: roomId.value,
       timeSlot: { day: day.value, start: start.value, end: end.value },
       type: 'weekly',
+      role: role.value,
     }
   }
   return {
-    ...(link.value === 'turma' ? { turmaId: turmaId.value } : { title: title.value.trim() }),
+    ...(link.value === 'turma' ? { turmaId: turmaId.value, role: role.value } : { title: title.value.trim() }),
     roomId: roomId.value,
     timeSlot: { day: derivedDay.value!, start: start.value, end: end.value },
     type: 'single',
@@ -258,6 +279,7 @@ async function submit() {
         ...(payload.date ? { date: payload.date } : {}),
         ...(payload.color ? { color: payload.color } : {}),
         ...(payload.title ? { title: payload.title } : {}),
+        ...(payload.role ? { role: payload.role } : {}),
       }
       result = await moveAllocation(props.projectId, props.editing.id, move)
     } else {
@@ -278,7 +300,11 @@ function messageForError(err: unknown): string {
     case 'ALLOCATION_ROOM_CONFLICT':
       return 'A sala já está ocupada nesse horário.'
     case 'ALLOCATION_TURMA_CONFLICT':
-      return 'A turma já tem outro evento nesse horário.'
+      return turmaHasPractice.value
+        ? `A turma já tem a aula ${role.value === 'pratica' ? 'prática' : 'teórica'} nesse horário.`
+        : 'A turma já tem outro evento nesse horário.'
+    case 'ALLOCATION_TURMA_WITHOUT_PRACTICE':
+      return 'Esta turma não tem aula prática.'
     case 'ALLOCATION_TURMA_NOT_IN_PROJECT':
       return 'A turma não pertence a este projeto.'
     case 'ALLOCATION_DATE_OUT_OF_RANGE':
@@ -352,6 +378,22 @@ function messageForError(err: unknown): string {
             </span>
           </label>
 
+          <!-- papel: só para turma com aula prática (teoria e prática no mesmo horário, em salas diferentes) -->
+          <div v-if="turmaHasPractice" class="flex flex-col gap-1">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Sala para a aula</span>
+            <div class="flex gap-4 text-sm text-gray-700 dark:text-gray-200" role="radiogroup" aria-label="Papel do evento">
+              <label class="flex items-center gap-1.5">
+                <input v-model="role" type="radio" value="teorica" /> Teórica
+              </label>
+              <label class="flex items-center gap-1.5">
+                <input v-model="role" type="radio" value="pratica" /> Prática
+              </label>
+            </div>
+            <span class="text-xs text-gray-400 dark:text-gray-500">
+              Esta turma tem aula prática no mesmo horário: cada horário precisa de uma sala teórica e uma de prática.
+            </span>
+          </div>
+
           <label v-else class="flex flex-col gap-1">
             <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Título</span>
             <input v-model="title" type="text" maxlength="120" placeholder="Ex.: Palestra de Inteligência Artificial" :class="inputClass" />
@@ -389,7 +431,9 @@ function messageForError(err: unknown): string {
             aria-label="Salas sugeridas"
           >
             <div class="flex flex-wrap items-baseline justify-between gap-x-2">
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Salas sugeridas</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Salas sugeridas<template v-if="turmaHasPractice"> · {{ role === 'pratica' ? 'prática' : 'teórica' }}</template>
+              </span>
               <span v-if="suggestions" class="text-xs text-gray-500 dark:text-gray-400">
                 {{ suggestions.turma.studentCount !== null ? `${suggestions.turma.studentCount} alunos` : 'nº de alunos a definir' }}<template
                   v-if="suggestions.turma.requiredFeatures.length"

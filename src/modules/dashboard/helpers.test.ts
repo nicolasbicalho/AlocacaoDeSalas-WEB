@@ -82,6 +82,14 @@ describe('coverage', () => {
     expect(c.withoutSchedule.map((t) => t.id)).toEqual(['c'])
   })
 
+  it('turma com aula prática conta a sala teórica e a de prática de cada horário', () => {
+    const p = { ...turma('p', [{ day: 'mon', start: '14:00', end: '16:00' }]), practice: { requiredFeatures: [] } }
+    const c = coverage([p], [event({ turmaId: 'p', role: 'pratica', timeSlot: { day: 'mon', start: '14:00', end: '16:00' } })])
+    expect(c.total).toBe(2)
+    expect(c.covered).toBe(1)
+    expect(c.pending.map((x) => x.role)).toEqual(['teorica'])
+  })
+
   it('evento que abrange o horário (mais longo) também cobre', () => {
     const c = coverage([b], [event({ turmaId: 'b', timeSlot: { day: 'tue', start: '13:00', end: '17:00' } })])
     expect(c.covered).toBe(1)

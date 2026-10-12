@@ -13,7 +13,7 @@ import { summarizeTurmaRooms } from '../helpers'
 import { listAllocations } from '@/modules/allocation/services/allocation.service'
 import { listRooms } from '@/modules/room/services/room.service'
 import { listProfessors } from '@/modules/professor/services/professor.service'
-import { DAY_OPTIONS, todayISO } from '@/modules/allocation/helpers'
+import { DAY_OPTIONS, ROLE_LABELS, todayISO } from '@/modules/allocation/helpers'
 import { nextDateForWeekday, referenceDate } from '@/modules/dashboard/helpers'
 import { TURMA_CATEGORIES, categoryLabel, categoryPillClass } from '@/shared/constants/turmaCategories'
 import { useProjectContext } from '@/modules/project/projectContext'
@@ -82,16 +82,27 @@ function roomName(id: string): string {
   return r ? r.name : '—'
 }
 
-/** Atalho "Alocar": cronograma na próxima data do horário pendente, com o modal preenchido. */
+/** Atalho "Alocar": cronograma na próxima data do horário pendente, com o modal preenchido (e o papel). */
 function allocateLink(turma: ITurma): RouteLocationRaw | null {
-  const slot = summaries.value.get(turma.id)?.firstPending
+  const pending = summaries.value.get(turma.id)?.firstPending
   const p = project.value
-  if (!slot || !p?.startDate || !p.endDate) return null
+  if (!pending || !p?.startDate || !p.endDate) return null
+  const { slot, role } = pending
   const date = nextDateForWeekday(referenceDate(p.startDate, p.endDate, todayISO()), slot.day, p.endDate)
   return {
     path: allocationPath,
-    query: { ...(date ? { date } : {}), turma: turma.id, start: slot.start, end: slot.end },
+    query: {
+      ...(date ? { date } : {}),
+      turma: turma.id,
+      start: slot.start,
+      end: slot.end,
+      ...(role === 'pratica' ? { role } : {}),
+    },
   }
+}
+
+function coverageText(covered: number, total: number): string {
+  return covered === 0 ? 'sem sala' : `${covered}/${total} horários`
 }
 
 async function fetchTurmas() {
@@ -303,26 +314,27 @@ function onCountUpdated(updated: ITurma) {
             <div v-if="s" class="flex flex-col gap-0.5 text-sm">
               <span v-if="s.total === 0" class="text-xs text-gray-400">sem horários</span>
               <template v-else>
-                <span v-if="s.roomIds.length" class="text-gray-800 dark:text-gray-100">
-                  {{ s.roomIds.map(roomName).join(', ') }}
-                </span>
-                <span class="flex items-center gap-2 whitespace-nowrap text-xs">
+                <!-- uma linha por papel: com aula prática, a turma precisa das duas salas em cada horário -->
+                <div v-for="c in s.roles" :key="c.role" class="flex flex-col gap-0.5">
+                  <span v-if="c.roomIds.length" class="text-gray-800 dark:text-gray-100">
+                    {{ c.roomIds.map(roomName).join(', ') }}
+                  </span>
                   <span
-                    class="rounded-full px-1.5 py-0.5 font-medium"
-                    :class="s.covered === s.total
+                    class="w-fit whitespace-nowrap rounded-full px-1.5 py-0.5 text-xs font-medium"
+                    :class="c.covered === s.total
                       ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
                       : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'"
                   >
-                    {{ s.covered === 0 ? 'sem sala' : `${s.covered}/${s.total} horários` }}
+                    <template v-if="s.roles.length > 1">{{ ROLE_LABELS[c.role] }} · </template>{{ coverageText(c.covered, s.total) }}
                   </span>
-                  <RouterLink
-                    v-if="auth.isUser && s.covered < s.total && allocateLink(asTurma(row))"
-                    :to="allocateLink(asTurma(row))!"
-                    class="font-medium text-primary-700 hover:underline dark:text-primary-400"
-                  >
-                    Alocar →
-                  </RouterLink>
-                </span>
+                </div>
+                <RouterLink
+                  v-if="auth.isUser && !s.complete && allocateLink(asTurma(row))"
+                  :to="allocateLink(asTurma(row))!"
+                  class="whitespace-nowrap text-xs font-medium text-primary-700 hover:underline dark:text-primary-400"
+                >
+                  Alocar{{ s.roles.length > 1 && s.firstPending ? ` ${s.firstPending.role === 'pratica' ? 'prática' : 'teórica'}` : '' }} →
+                </RouterLink>
               </template>
             </div>
           </template>

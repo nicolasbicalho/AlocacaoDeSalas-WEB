@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { summarizeTurmaRooms } from './helpers'
 import type { IAllocation, ITurma } from '@/types'
 
-function turma(id: string, schedule: ITurma['schedule']): ITurma {
+function turma(id: string, schedule: ITurma['schedule'], extra: Partial<ITurma> = {}): ITurma {
   return {
     id,
     projectId: 'p',
@@ -17,6 +17,7 @@ function turma(id: string, schedule: ITurma['schedule']): ITurma {
     active: true,
     createdAt: '',
     updatedAt: '',
+    ...extra,
   }
 }
 
@@ -51,14 +52,48 @@ describe('summarizeTurmaRooms', () => {
     ]
     const s = summarizeTurmaRooms([a, b, semGrade], allocs)
 
-    expect(s.get('a')).toEqual({ total: 2, covered: 2, roomIds: ['r1', 'r2'], firstPending: null })
-    expect(s.get('b')).toMatchObject({ total: 1, covered: 0, roomIds: ['r3'] })
-    expect(s.get('b')?.firstPending).toEqual({ day: 'tue', start: '14:00', end: '16:00' })
-    expect(s.get('c')).toEqual({ total: 0, covered: 0, roomIds: [], firstPending: null })
+    expect(s.get('a')).toEqual({
+      total: 2,
+      roles: [{ role: 'teorica', covered: 2, roomIds: ['r1', 'r2'] }],
+      complete: true,
+      firstPending: null,
+    })
+    expect(s.get('b')).toMatchObject({ total: 1, complete: false, roles: [{ covered: 0, roomIds: ['r3'] }] })
+    expect(s.get('b')?.firstPending).toEqual({ slot: { day: 'tue', start: '14:00', end: '16:00' }, role: 'teorica' })
+    expect(s.get('c')).toMatchObject({ total: 0, complete: true, firstPending: null })
   })
 
   it('primeiro pendente segue a ordem da semana, não a ordem de cadastro', () => {
     const s = summarizeTurmaRooms([a], [])
-    expect(s.get('a')?.firstPending).toEqual({ day: 'mon', start: '08:00', end: '10:00' })
+    expect(s.get('a')?.firstPending?.slot).toEqual({ day: 'mon', start: '08:00', end: '10:00' })
+  })
+
+  it('turma com aula prática precisa da teórica e da prática em cada horário', () => {
+    const p = turma('p', [{ day: 'mon', start: '14:00', end: '16:00' }], { practice: { requiredFeatures: ['computadores'] } })
+    const onlyPractice = summarizeTurmaRooms([p], [event({ turmaId: 'p', roomId: 'lab', role: 'pratica', timeSlot: { day: 'mon', start: '14:00', end: '16:00' } })])
+    expect(onlyPractice.get('p')).toEqual({
+      total: 1,
+      roles: [
+        { role: 'teorica', covered: 0, roomIds: [] },
+        { role: 'pratica', covered: 1, roomIds: ['lab'] },
+      ],
+      complete: false,
+      firstPending: { slot: { day: 'mon', start: '14:00', end: '16:00' }, role: 'teorica' },
+    })
+
+    const both = summarizeTurmaRooms(
+      [p],
+      [
+        event({ turmaId: 'p', roomId: 'lab', role: 'pratica', timeSlot: { day: 'mon', start: '14:00', end: '16:00' } }),
+        event({ turmaId: 'p', roomId: 's101', role: 'teorica', timeSlot: { day: 'mon', start: '14:00', end: '16:00' } }),
+      ],
+    )
+    expect(both.get('p')?.complete).toBe(true)
+  })
+
+  it('evento sem papel (anterior à fase 3) conta como teórico', () => {
+    const p = turma('p', [{ day: 'mon', start: '14:00', end: '16:00' }], { practice: { requiredFeatures: [] } })
+    const s = summarizeTurmaRooms([p], [event({ turmaId: 'p', timeSlot: { day: 'mon', start: '14:00', end: '16:00' } })])
+    expect(s.get('p')?.firstPending?.role).toBe('pratica')
   })
 })

@@ -21,6 +21,8 @@ export interface TurmaCreatePayload {
   /** nome; a API associa ao cadastro de professores (ou cria o professor) */
   professor: string
   requiredFeatures: RoomFeature[]
+  /** aula prática no mesmo horário; null = sem (na edição, desliga) */
+  practice: { requiredFeatures: RoomFeature[] } | null
   schedule: TimeSlot[]
 }
 

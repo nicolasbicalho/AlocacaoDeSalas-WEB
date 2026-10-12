@@ -1,4 +1,4 @@
-import type { EventColor, IAllocation, TurmaCategory, WeekDay } from '@/types'
+import type { AllocationRole, EventColor, IAllocation, ITurma, TimeSlot, TurmaCategory, WeekDay } from '@/types'
 
 export const DAY_OPTIONS: { value: WeekDay; label: string; long: string }[] = [
   { value: 'mon', label: 'Seg', long: 'Segunda' },
@@ -211,4 +211,30 @@ export function eventClasses(
 ): ColorClasses {
   if (a.type === 'weekly') return categoryClasses(category)
   return COLOR_BY_VALUE[a.color ?? DEFAULT_EVENT_COLOR] ?? COLOR_BY_VALUE[DEFAULT_EVENT_COLOR]
+}
+
+// ---------------- papel do evento (teórica / prática) ----------------
+
+export const ROLE_LABELS: Record<AllocationRole, string> = { teorica: 'Teórica', pratica: 'Prática' }
+
+/** Eventos sem papel (anteriores à fase 3) são teóricos. */
+export function roleOf(a: Pick<IAllocation, 'role'>): AllocationRole {
+  return a.role ?? 'teorica'
+}
+
+/** Papéis que cada horário da turma precisa: teórica e, com aula prática, também prática. */
+export function rolesOf(turma: Pick<ITurma, 'practice'>): AllocationRole[] {
+  return turma.practice ? ['teorica', 'pratica'] : ['teorica']
+}
+
+/** O horário está coberto quando um evento recorrente do papel, no mesmo dia, abrange o horário inteiro. */
+export function slotCovered(events: IAllocation[], slot: TimeSlot, role: AllocationRole): boolean {
+  return events.some(
+    (e) =>
+      e.type === 'weekly' &&
+      roleOf(e) === role &&
+      e.timeSlot.day === slot.day &&
+      e.timeSlot.start <= slot.start &&
+      e.timeSlot.end >= slot.end,
+  )
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { eventClasses } from '../helpers'
+import { eventClasses, ROLE_LABELS, roleOf } from '../helpers'
 import type { ITurma, IRoom, IBuilding, IAllocation } from '@/types'
 
 const props = defineProps<{
@@ -114,8 +114,10 @@ function title(a: IAllocation): string {
 function subtitle(a: IAllocation): string {
   const parts = [`${a.timeSlot.start}–${a.timeSlot.end}`]
   if (a.type === 'single') parts.push('Único')
-  const prof = a.turmaId ? props.turmaById.get(a.turmaId)?.professor : undefined
-  if (prof) parts.push(prof)
+  const turma = a.turmaId ? props.turmaById.get(a.turmaId) : undefined
+  // turma com aula prática: as duas salas aparecem no mesmo horário, cada uma com o seu papel
+  if (turma?.practice) parts.push(ROLE_LABELS[roleOf(a)])
+  if (turma?.professor) parts.push(turma.professor)
   return parts.join(' · ')
 }
 function onFree(roomId: string, hour: number) {

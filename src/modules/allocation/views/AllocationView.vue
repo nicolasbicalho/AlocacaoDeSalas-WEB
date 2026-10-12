@@ -22,11 +22,13 @@ import {
   formatDateBR,
   todayISO,
   weekDates,
+  ROLE_LABELS,
+  roleOf,
 } from '../helpers'
 import { useProjectContext } from '@/modules/project/projectContext'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
-import type { ITurma, IRoom, IBuilding, IAllocation, TurmaCategory } from '@/types'
+import type { ITurma, IRoom, IBuilding, IAllocation, TurmaCategory, AllocationRole } from '@/types'
 import { TURMA_CATEGORIES } from '@/shared/constants/turmaCategories'
 
 const route = useRoute()
@@ -49,7 +51,14 @@ let highlightTimer: ReturnType<typeof setTimeout> | undefined
 
 const modalOpen = ref(false)
 const editing = ref<IAllocation | null>(null)
-const prefill = ref<{ turmaId?: string; roomId?: string; date?: string; start?: string; end?: string } | null>(null)
+const prefill = ref<{
+  turmaId?: string
+  roomId?: string
+  date?: string
+  start?: string
+  end?: string
+  role?: AllocationRole
+} | null>(null)
 const confirmTarget = ref<IAllocation | null>(null)
 const deleting = ref(false)
 
@@ -117,7 +126,10 @@ const stats = computed(() => ({
 function eventTitle(a: IAllocation): string {
   if (a.turmaId) {
     const t = turmaById.value.get(a.turmaId)
-    return t ? `${t.name} — ${t.professor}` : '—'
+    if (!t) return '—'
+    // reposição só da prática (ou da teoria) numa turma com aula prática
+    const role = t.practice ? ` (${ROLE_LABELS[roleOf(a)].toLowerCase()})` : ''
+    return `${t.name}${role} — ${t.professor}`
   }
   return a.title ?? '—'
 }
@@ -179,7 +191,12 @@ async function applyDeepLink() {
 
   const turmaId = queryString(q.turma)
   if (turmaId && canManage.value) {
-    openCreate({ turmaId, start: queryString(q.start), end: queryString(q.end) })
+    openCreate({
+      turmaId,
+      start: queryString(q.start),
+      end: queryString(q.end),
+      ...(queryString(q.role) === 'pratica' ? { role: 'pratica' as const } : {}),
+    })
   }
   router.replace({ query: {} })
 }
@@ -205,7 +222,7 @@ async function goToEvent(a: IAllocation) {
   highlightTimer = setTimeout(() => (highlightId.value = null), 2200)
 }
 
-function openCreate(pf?: { turmaId?: string; roomId?: string; start?: string; end?: string }) {
+function openCreate(pf?: { turmaId?: string; roomId?: string; start?: string; end?: string; role?: AllocationRole }) {
   editing.value = null
   prefill.value = { date: selectedDate.value, ...pf }
   modalOpen.value = true

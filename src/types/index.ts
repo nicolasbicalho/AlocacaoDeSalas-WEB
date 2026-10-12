@@ -119,7 +119,10 @@ export interface ITurma {
   professor: string
   /** cadastro de professores (associado pelo nome ao salvar a turma) */
   professorId?: string
+  /** requisitos da sala teórica */
   requiredFeatures: RoomFeature[]
+  /** aula prática no mesmo horário (D3): a turma ocupa uma segunda sala; ausente = só teoria */
+  practice?: { requiredFeatures: RoomFeature[] }
   schedule: TimeSlot[]
   active: boolean
   createdAt: string
@@ -135,6 +138,9 @@ export interface TurmaCounts {
 
 /** `weekly` = evento recorrente (sempre de turma); `single` = evento único */
 export type AllocationType = 'weekly' | 'single'
+
+/** Papel do evento de turma: teórica e prática acontecem no mesmo horário, em salas diferentes. */
+export type AllocationRole = 'teorica' | 'pratica'
 
 /** Paleta fixa dos eventos únicos (espelha `EVENT_COLORS` da API). */
 export type EventColor = 'amber' | 'emerald' | 'rose' | 'violet' | 'sky' | 'orange'
@@ -152,6 +158,8 @@ export interface IAllocation {
   type: AllocationType
   date?: string
   color?: EventColor
+  /** presente em todo evento de turma (eventos antigos vêm como 'teorica') */
+  role?: AllocationRole
   createdAt: string
   updatedAt: string
 }
@@ -181,7 +189,8 @@ export interface RoomSuggestion {
 }
 
 export interface RoomSuggestions {
-  turma: { id: string; studentCount: number | null; requiredFeatures: RoomFeature[] }
+  /** requiredFeatures = as do papel pedido (teórica: da turma; prática: de `practice`) */
+  turma: { id: string; role: AllocationRole; studentCount: number | null; requiredFeatures: RoomFeature[] }
   professor: { id: string; name: string; preferences: ProfessorPreferences } | null
   /** livres e compatíveis primeiro, na ordem de melhor escolha */
   rooms: RoomSuggestion[]

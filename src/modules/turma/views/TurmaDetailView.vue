@@ -42,6 +42,7 @@ const initialValues = computed(() =>
         studentCount: turma.value.studentCount,
         professor: turma.value.professor,
         requiredFeatures: turma.value.requiredFeatures,
+        practice: turma.value.practice ?? null,
         schedule: turma.value.schedule,
       }
     : undefined,
@@ -78,6 +79,13 @@ async function onSubmit(values: TurmaUpdatePayload) {
   } catch (err) {
     if (isAxiosError(err) && err.response?.data?.error?.code === 'TURMA_CODE_EXISTS') {
       formRef.value?.setServerError('code', 'Já existe uma turma com este código no projeto')
+      return
+    }
+    if (isAxiosError(err) && err.response?.data?.error?.code === 'TURMA_PRACTICE_IN_USE') {
+      ui.toast({
+        message: 'A turma ainda tem eventos de prática no cronograma. Remova-os antes de desligar a aula prática.',
+        variant: 'error',
+      })
       return
     }
     ui.toast({ message: 'Erro ao salvar as alterações.', variant: 'error' })

@@ -1,16 +1,25 @@
-import type { IAllocation, ITurma, TimeSlot, WeekDay } from '@/types'
+import { rolesOf, roleOf, slotCovered } from '@/modules/allocation/helpers'
+import type { AllocationRole, IAllocation, ITurma, TimeSlot, WeekDay } from '@/types'
 
 const DAY_ORDER: Record<WeekDay, number> = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5 }
+
+export interface RoleCoverage {
+  role: AllocationRole
+  /** horários cobertos por um evento recorrente da turma neste papel (mesma regra do dashboard) */
+  covered: number
+  /** salas distintas dos eventos recorrentes deste papel, na ordem da semana */
+  roomIds: string[]
+}
 
 export interface TurmaRoomSummary {
   /** horários na grade da turma */
   total: number
-  /** horários cobertos por um evento recorrente da própria turma (mesma regra do dashboard) */
-  covered: number
-  /** salas distintas dos eventos recorrentes da turma, na ordem da semana */
-  roomIds: string[]
-  /** primeiro horário ainda sem sala (para o atalho "Alocar") */
-  firstPending: TimeSlot | null
+  /** teórica e, se a turma tem aula prática, prática (D3: no mesmo horário, em outra sala) */
+  roles: RoleCoverage[]
+  /** todos os horários têm sala em todos os papéis */
+  complete: boolean
+  /** primeiro horário (e papel) ainda sem sala, para o atalho "Alocar" */
+  firstPending: { slot: TimeSlot; role: AllocationRole } | null
 }
 
 /** Resumo de salas por turma, a partir dos eventos do projeto. */
@@ -35,19 +44,24 @@ export function summarizeTurmaRooms(
     const slots = [...turma.schedule].sort(
       (a, b) => DAY_ORDER[a.day] - DAY_ORDER[b.day] || a.start.localeCompare(b.start),
     )
-    let covered = 0
-    let firstPending: TimeSlot | null = null
+    const roles = rolesOf(turma)
+    let firstPending: TurmaRoomSummary['firstPending'] = null
+
+    // por horário, a teórica antes da prática
     for (const slot of slots) {
-      const ok = events.some(
-        (e) => e.timeSlot.day === slot.day && e.timeSlot.start <= slot.start && e.timeSlot.end >= slot.end,
-      )
-      if (ok) covered++
-      else firstPending ??= slot
+      for (const role of roles) {
+        if (!firstPending && !slotCovered(events, slot, role)) firstPending = { slot, role }
+      }
     }
+    const coverage = roles.map((role) => ({
+      role,
+      covered: slots.filter((slot) => slotCovered(events, slot, role)).length,
+      roomIds: [...new Set(events.filter((e) => roleOf(e) === role).map((e) => e.roomId))],
+    }))
     result.set(turma.id, {
       total: slots.length,
-      covered,
-      roomIds: [...new Set(events.map((e) => e.roomId))],
+      roles: coverage,
+      complete: coverage.every((c) => c.covered === slots.length),
       firstPending,
     })
   }

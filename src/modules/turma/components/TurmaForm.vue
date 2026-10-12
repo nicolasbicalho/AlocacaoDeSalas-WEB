@@ -24,6 +24,8 @@ export interface TurmaValues {
   studentCount: number | null
   professor: string
   requiredFeatures: RoomFeature[]
+  /** aula prática no mesmo horário (segunda sala); null = sem */
+  practice: { requiredFeatures: RoomFeature[] } | null
   schedule: TimeSlot[]
 }
 
@@ -66,6 +68,9 @@ const notes = ref(props.initialValues?.notes ?? '')
 const studentCount = ref(props.initialValues?.studentCount != null ? String(props.initialValues.studentCount) : '')
 const studentCountError = ref('')
 const requiredFeatures = ref<RoomFeature[]>([...(props.initialValues?.requiredFeatures ?? [])])
+// teoria e prática acontecem no mesmo horário (D3): a prática ocupa uma segunda sala
+const hasPractice = ref(!!props.initialValues?.practice)
+const practiceFeatures = ref<RoomFeature[]>([...(props.initialValues?.practice?.requiredFeatures ?? [])])
 const schedule = ref<TimeSlot[]>((props.initialValues?.schedule ?? []).map((s) => ({ ...s })))
 
 watch(
@@ -77,6 +82,8 @@ watch(
     notes.value = v.notes ?? ''
     studentCount.value = v.studentCount != null ? String(v.studentCount) : ''
     requiredFeatures.value = [...(v.requiredFeatures ?? [])]
+    hasPractice.value = !!v.practice
+    practiceFeatures.value = [...(v.practice?.requiredFeatures ?? [])]
     schedule.value = (v.schedule ?? []).map((s) => ({ ...s }))
   },
 )
@@ -139,6 +146,7 @@ const onSubmit = handleSubmit((values) => {
     professor: values.professor.trim(),
     studentCount: count,
     requiredFeatures: requiredFeatures.value,
+    practice: hasPractice.value ? { requiredFeatures: practiceFeatures.value } : null,
     schedule: schedule.value,
   })
 })
@@ -247,10 +255,36 @@ const textareaClass =
 
     <FeatureCheckboxes
       v-model="requiredFeatures"
-      label="Requisitos de sala"
+      :label="hasPractice ? 'Requisitos da sala teórica' : 'Requisitos de sala'"
       hint="Marque o que a sala precisa ter para receber esta turma."
       :readonly="readonly || loading"
     />
+
+    <fieldset class="flex flex-col gap-3 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+      <legend class="px-1 text-sm font-medium text-gray-700 dark:text-gray-300">Aula prática</legend>
+      <label class="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+        <input
+          v-model="hasPractice"
+          type="checkbox"
+          class="mt-0.5 h-4 w-4 accent-primary-600"
+          :disabled="readonly || loading"
+        />
+        <span>
+          Tem aula prática no mesmo horário
+          <span class="block text-xs text-gray-500 dark:text-gray-400">
+            A turma ocupa duas salas ao mesmo tempo em cada horário: a teórica e a de prática. As duas precisam
+            comportar a turma inteira.
+          </span>
+        </span>
+      </label>
+      <FeatureCheckboxes
+        v-if="hasPractice"
+        v-model="practiceFeatures"
+        label="Requisitos da sala de prática"
+        hint="Ex.: computadores para laboratório de informática, bancadas para laboratório experimental."
+        :readonly="readonly || loading"
+      />
+    </fieldset>
     <ScheduleEditor v-model="schedule" :readonly="readonly || loading" />
     <div v-if="!readonly" class="flex justify-end gap-3">
       <slot name="actions" />

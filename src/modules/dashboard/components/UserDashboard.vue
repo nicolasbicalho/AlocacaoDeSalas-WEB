@@ -70,9 +70,21 @@ function pendingLink(p: (typeof cov.value.pending)[number]): RouteLocationRaw {
   const date = project.value ? nextDateForWeekday(refDate.value, p.slot.day, project.value.endDate) : null
   return {
     path: allocationPath.value,
-    query: { ...(date ? { date } : {}), turma: p.turma.id, start: p.slot.start, end: p.slot.end },
+    query: {
+      ...(date ? { date } : {}),
+      turma: p.turma.id,
+      start: p.slot.start,
+      end: p.slot.end,
+      ...(p.role === 'pratica' ? { role: 'pratica' } : {}),
+    },
   }
 }
+// turma com aula prática: diz qual das duas salas falta
+function pendingText(p: (typeof cov.value.pending)[number]): string {
+  if (!p.turma.practice) return 'sem sala'
+  return p.role === 'pratica' ? 'sem sala de prática' : 'sem sala teórica'
+}
+const anyPractice = computed(() => activeTurmas.value.some((t) => t.practice))
 function eventLink(a: IAllocation): RouteLocationRaw {
   return { path: allocationPath.value, query: { event: a.id } }
 }
@@ -167,7 +179,10 @@ const shortDay = (d: Parameters<typeof dayLabel>[0]) => dayLabel(d).slice(0, 3)
               :style="{ width: `${coveragePercent}%` }"
             />
           </div>
-          <p class="text-xs text-gray-500 dark:text-gray-400">{{ coveragePercent }}% da grade semanal das turmas alocada</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            {{ coveragePercent }}% da grade semanal das turmas alocada<template v-if="anyPractice">
+              · turmas com aula prática contam a sala teórica e a de prática</template>
+          </p>
         </template>
         <p v-else class="text-sm text-gray-500 dark:text-gray-400">
           As turmas ainda não têm horários na grade — o progresso aparece assim que houver horários cadastrados.
@@ -212,7 +227,7 @@ const shortDay = (d: Parameters<typeof dayLabel>[0]) => dayLabel(d).slice(0, 3)
               <span class="ml-auto text-xs text-primary-700 dark:text-primary-400">Preencher →</span>
             </RouterLink>
           </li>
-          <li v-for="p in cov.pending.slice(0, PENDING_SHOWN)" :key="`${p.turma.id}-${p.slot.day}-${p.slot.start}`">
+          <li v-for="p in cov.pending.slice(0, PENDING_SHOWN)" :key="`${p.turma.id}-${p.slot.day}-${p.slot.start}-${p.role}`">
             <RouterLink
               :to="pendingLink(p)"
               class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-700 transition-colors hover:bg-amber-50 dark:text-gray-200 dark:hover:bg-amber-950/30"
@@ -220,7 +235,7 @@ const shortDay = (d: Parameters<typeof dayLabel>[0]) => dayLabel(d).slice(0, 3)
             >
               <span class="text-amber-500" aria-hidden="true">⚠</span>
               <span class="font-medium">{{ p.turma.name }}</span>
-              <span class="text-gray-500 dark:text-gray-400">{{ shortDay(p.slot.day) }} {{ p.slot.start }}–{{ p.slot.end }} sem sala</span>
+              <span class="text-gray-500 dark:text-gray-400">{{ shortDay(p.slot.day) }} {{ p.slot.start }}–{{ p.slot.end }} {{ pendingText(p) }}</span>
               <span class="ml-auto text-xs text-primary-700 dark:text-primary-400">Alocar →</span>
             </RouterLink>
           </li>
