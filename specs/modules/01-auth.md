@@ -1,6 +1,6 @@
 # Módulo 1 — Autenticação e Autorização
 
-**Status:** `draft`
+**Status:** `implemented`
 **Depende de:** nenhum
 **API correspondente:** [`AlocacaoDeSalas-API/specs/modules/01-auth.md`](../../../AlocacaoDeSalas-API/specs/modules/01-auth.md)
 
@@ -165,12 +165,12 @@ Authorization: Bearer <accessToken>
 
 ## Critérios de Aceitação
 
-- [ ] Login com credenciais corretas redireciona para a home do role do usuário
-- [ ] Login com credenciais erradas exibe mensagem sem revelar qual campo está incorreto
-- [ ] Conta inativa exibe mensagem específica
-- [ ] Recuperação de senha exibe mensagem de confirmação sem revelar se e-mail existe
-- [ ] Redefinição de senha com token inválido exibe mensagem de erro adequada
-- [ ] Logout limpa o estado e redireciona para `/login`
-- [ ] Usuário autenticado que acessa `/login` é redirecionado automaticamente
-- [ ] Token expirado durante navegação dispara refresh automático — usuário não percebe
-- [ ] Refresh falho redireciona para `/login` preservando `redirect` na query
+- [x] Login com credenciais corretas redireciona para a home do role do usuário
+- [x] Login com credenciais erradas exibe mensagem sem revelar qual campo está incorreto
+- [x] Conta inativa exibe mensagem específica
+- [x] Recuperação de senha exibe mensagem de confirmação sem revelar se e-mail existe
+- [x] Redefinição de senha com token inválido exibe mensagem de erro adequada
+- [x] Logout limpa o estado e redireciona para `/login`
+- [x] Usuário autenticado que acessa `/login` é redirecionado automaticamente
+- [x] Token expirado durante navegação dispara refresh automático — usuário não percebe
+- [x] Refresh falho redireciona para `/login` preservando `redirect` na query
