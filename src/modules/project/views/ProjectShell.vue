@@ -67,6 +67,7 @@ const tabs = computed<ContextTab[]>(() => [
   { label: 'Visão geral', to: base.value, active: section.value === 'overview' },
   { label: 'Turmas', to: `${base.value}/turmas`, active: section.value === 'turmas', count: turmaCount.value },
   { label: 'Cronograma', to: `${base.value}/allocation`, active: section.value === 'allocation' },
+  { label: 'Relatórios', to: `${base.value}/reports`, active: section.value === 'reports' },
 ])
 
 const crumbs = computed<Crumb[]>(() => {
@@ -81,6 +82,7 @@ const crumbs = computed<Crumb[]>(() => {
     if (route.meta.leaf === 'detail') items.push({ label: leafLabel.value || '…' })
   }
   if (section.value === 'allocation') items.push({ label: 'Cronograma' })
+  if (section.value === 'reports') items.push({ label: 'Relatórios' })
   return items
 })
 

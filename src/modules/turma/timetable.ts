@@ -48,7 +48,7 @@ const emptyWeek = (): Record<WeekDay, string[]> =>
   Object.fromEntries(WEEK.map((d) => [d, []])) as unknown as Record<WeekDay, string[]>
 
 /** Evento recorrente do papel que cobre o horário inteiro (mesma regra da cobertura). */
-function coveringEvent(events: IAllocation[], slot: TimeSlot, role: AllocationRole): IAllocation | undefined {
+export function coveringEvent(events: IAllocation[], slot: TimeSlot, role: AllocationRole): IAllocation | undefined {
   return events.find(
     (e) =>
       e.type === 'weekly' &&

@@ -9,7 +9,7 @@ import { downloadBlob, fileSlug, XLSX_MIME } from '@/shared/utils/download'
 import type { IProject, ITurma } from '@/types'
 
 /** Todas as turmas do projeto (a API pagina em até 100). */
-async function fetchAllTurmas(projectId: string): Promise<ITurma[]> {
+export async function fetchAllTurmas(projectId: string): Promise<ITurma[]> {
   const all: ITurma[] = []
   for (let page = 1; ; page++) {
     const res = await listTurmas({ projectId, page, limit: 100 })

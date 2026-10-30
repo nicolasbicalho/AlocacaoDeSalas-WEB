@@ -250,6 +250,53 @@ export interface AutoAllocationResult {
 
 export type AutoComparison = Record<AutoStrategy, { metrics: AutoMetrics }>
 
+// Relatório de ocupação (módulo 08) — frações 0..1, horas semanais
+export type ShiftKey = 'manha' | 'tarde' | 'noite'
+
+export interface RoomOccupancy {
+  roomId: string
+  roomName: string
+  buildingId: string
+  buildingName: string
+  capacity: number
+  active: boolean
+  weeklyHours: number
+  occupancy: number
+  byShift: Record<ShiftKey, number>
+  /** null quando nenhuma aula da sala entra na conta (sem aulas ou só turmas "a definir") */
+  seatUsage: number | null
+  recurringEvents: number
+  singleEvents: number
+}
+
+export interface BuildingOccupancy {
+  buildingId: string
+  buildingName: string
+  rooms: number
+  weeklyHoursUsed: number
+  occupancy: number
+  seatUsage: number | null
+}
+
+export interface OccupancyReport {
+  window: { days: WeekDay[]; start: string; end: string; weeklyHours: number }
+  summary: {
+    rooms: number
+    usedRooms: number
+    idleRooms: number
+    weeklyHoursUsed: number
+    occupancy: number
+    seatUsage: number | null
+    recurringEvents: number
+    singleEvents: number
+    unknownStudentEvents: number
+  }
+  byShift: { key: ShiftKey; start: string; end: string; occupancy: number }[]
+  byBuilding: BuildingOccupancy[]
+  rooms: RoomOccupancy[]
+  heatmap: { days: WeekDay[]; hours: number[]; busyRooms: number[][] }
+}
+
 export type AuditEntity =
   | 'auth'
   | 'user'

@@ -17,7 +17,7 @@ declare module 'vue-router' {
     roles?: ('admin' | 'user')[]
     layout?: 'AppLayout' | 'AuthLayout'
     /** aba ativa dentro de um shell de contexto (projeto ou prédio) */
-    section?: 'overview' | 'turmas' | 'allocation' | 'rooms'
+    section?: 'overview' | 'turmas' | 'allocation' | 'reports' | 'rooms'
     /** tipo da página-folha, usado no breadcrumb do shell */
     leaf?: 'new' | 'detail' | 'import'
   }

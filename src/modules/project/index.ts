@@ -1,6 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router'
 import { turmaProjectChildren } from '@/modules/turma'
 import { allocationProjectChildren } from '@/modules/allocation'
+import { reportProjectChildren } from '@/modules/report'
 
 export const projectRoutes: RouteRecordRaw[] = [
   {
@@ -14,7 +15,7 @@ export const projectRoutes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, roles: ['user'], layout: 'AppLayout' },
   },
   {
-    // shell do projeto: cabeçalho + abas (Visão geral / Turmas / Cronograma)
+    // shell do projeto: cabeçalho + abas (Visão geral / Turmas / Cronograma / Relatórios)
     path: '/projects/:projectId',
     component: () => import('./views/ProjectShell.vue'),
     meta: { requiresAuth: true, roles: ['admin', 'user'], layout: 'AppLayout' },
@@ -26,6 +27,7 @@ export const projectRoutes: RouteRecordRaw[] = [
       },
       ...turmaProjectChildren,
       ...allocationProjectChildren,
+      ...reportProjectChildren,
     ],
   },
 ]
