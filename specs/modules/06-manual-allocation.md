@@ -100,6 +100,10 @@ A query é lida uma vez ao carregar e depois limpa da URL (recarregar não reabr
 - Carrega em paralelo: projeto (com `startDate`/`endDate`), turmas, salas e eventos; monta mapas turma/sala para exibir nomes.
 - Estado vazio quando não há eventos.
 
+### Cronograma expandido
+
+Botão **"Expandir"** (todos) na barra de filtros: a área do cronograma — navegação por data, filtros, grade e legenda — passa a ocupar toda a janela (sem a tela cheia do navegador), para a grade larga caber com menos rolagem lateral (`useExpandedView`). Os modais continuam abrindo por cima. Volta com **"Recolher"** ou **Esc** (o Esc de um modal aberto fecha só o modal).
+
 ### Navegação por data (`WeekStrip`)
 
 - Faixa da semana **Seg–Sáb** com as **datas reais** de cada dia; a data selecionada fica destacada.
@@ -164,6 +168,7 @@ GET    /projects/:projectId/allocations/suggestions     # salas sugeridas (turma
 - [x] `user` adiciona evento recorrente (turma) ou único (turma ou título livre)
 - [x] Evento único tem paleta de cores (padrão `amber`); na grade, únicos usam a cor escolhida e recorrentes a cor primária
 - [x] Lista de eventos únicos ordenada por data; clicar seleciona a data, volta o filtro para "Todos", rola até a grade e destaca o evento por ~2s
+- [x] Botão "Expandir" amplia o cronograma para toda a janela (sem tela cheia do navegador); Esc ou "Recolher" volta; o modal de evento abre por cima
 - [x] Conflito de sala ou de turma e data fora do semestre são exibidos no modal (sem fechar), sem duplicar no cronograma
 - [x] `user` move/edita (PATCH) e remove (com confirmação) eventos
 - [x] `admin` vê o cronograma em somente leitura (sem ações de edição)

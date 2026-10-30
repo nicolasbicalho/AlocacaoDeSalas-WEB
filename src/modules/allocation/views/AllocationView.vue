@@ -11,6 +11,7 @@ import AutoAllocationPanel from '../components/AutoAllocationPanel.vue'
 import { downloadTimetable } from '@/modules/turma/timetable.export'
 import ScheduleGrid from '../components/ScheduleGrid.vue'
 import WeekStrip from '../components/WeekStrip.vue'
+import { useExpandedView } from '../useExpandedView'
 import { listAllocations, deleteAllocation } from '../services/allocation.service'
 import { listTurmas } from '@/modules/turma/services/turma.service'
 import { listRooms } from '@/modules/room/services/room.service'
@@ -63,6 +64,9 @@ const prefill = ref<{
 } | null>(null)
 const confirmTarget = ref<IAllocation | null>(null)
 const deleting = ref(false)
+
+// cronograma expandido: a grade larga ocupa toda a janela, com menos rolagem lateral (o Esc de um modal não recolhe)
+const { expanded, toggle: toggleExpanded } = useExpandedView(() => !modalOpen.value && !confirmTarget.value)
 
 const semester = computed(() =>
   project.value?.startDate && project.value?.endDate
@@ -342,64 +346,86 @@ async function confirmDelete() {
         @changed="reloadAllocations"
       />
 
-      <!-- navegação + filtro -->
-      <div class="flex flex-wrap items-end justify-between gap-3">
-        <WeekStrip
-          v-model="selectedDate"
-          :start-date="semester.startDate"
-          :end-date="semester.endDate"
-          :counts="countsForWeek"
-        />
-        <div class="flex flex-wrap items-center gap-2">
-          <select
-            v-model="showFilter"
-            aria-label="Mostrar eventos"
-            class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-          >
-            <option value="todas">Todos os eventos</option>
-            <option v-for="c in TURMA_CATEGORIES" :key="c.value" :value="c.value">{{ c.plural }}</option>
-            <option value="unicos">Só eventos únicos</option>
-          </select>
-          <select
-            v-model="selectedBuilding"
-            class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-          >
-            <option value="">Todos os prédios</option>
-            <option v-for="b in buildings" :key="b.id" :value="b.id">{{ b.name }}</option>
-          </select>
-          <AppButton variant="secondary" :loading="downloading" title="Quadro semanal, lista de turmas e ocupação das salas (XLSX)" @click="onDownloadTimetable">
-            Baixar quadro de horários
-          </AppButton>
-          <AppButton v-if="canManage" @click="openCreate()">Adicionar evento</AppButton>
-        </div>
-      </div>
+      <!-- cronograma (navegação, filtros, grade e legenda): pode ser expandido para toda a janela -->
+      <div
+        :class="expanded
+          ? 'fixed inset-0 z-40 flex flex-col gap-3 overflow-auto bg-gray-50 p-4 dark:bg-gray-900'
+          : 'flex flex-col gap-4'"
+        :role="expanded ? 'dialog' : undefined"
+        :aria-label="expanded ? `Cronograma de ${project.name} expandido` : undefined"
+      >
+        <p v-if="expanded" class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+          Cronograma · {{ project.name }}
+          <span class="font-normal text-gray-500 dark:text-gray-400">— Esc ou "Recolher" para voltar</span>
+        </p>
 
-      <AppEmptyState
-        v-if="gridRooms.length === 0"
-        title="Nenhuma sala"
-        description="Cadastre salas (e prédios) para montar o cronograma."
-      />
-      <template v-else>
-        <ScheduleGrid
-          :rooms="gridRooms"
-          :buildings="buildings"
-          :events="eventsForDate"
-          :turma-by-id="turmaById"
-          :can-manage="canManage"
-          :group-by-building="!selectedBuilding"
-          :highlight-id="highlightId"
-          @add-at="openCreate($event)"
-          @open="openEdit"
-          @remove="confirmTarget = $event"
-        />
-        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
-          <span v-for="c in TURMA_CATEGORIES" :key="c.value" class="flex items-center gap-1.5">
-            <span class="h-3 w-3 rounded-sm" :class="categoryClasses(c.value).swatch" /> {{ c.plural }}
-          </span>
-          <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded-sm bg-gradient-to-r from-amber-400 via-rose-500 to-sky-500" /> Único (cor escolhida)</span>
-          <span v-if="canManage">Clique numa célula vazia para adicionar; clique num evento para editar.</span>
+        <!-- navegação + filtro -->
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <WeekStrip
+            v-model="selectedDate"
+            :start-date="semester.startDate"
+            :end-date="semester.endDate"
+            :counts="countsForWeek"
+          />
+          <div class="flex flex-wrap items-center gap-2">
+            <select
+              v-model="showFilter"
+              aria-label="Mostrar eventos"
+              class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+            >
+              <option value="todas">Todos os eventos</option>
+              <option v-for="c in TURMA_CATEGORIES" :key="c.value" :value="c.value">{{ c.plural }}</option>
+              <option value="unicos">Só eventos únicos</option>
+            </select>
+            <select
+              v-model="selectedBuilding"
+              class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+            >
+              <option value="">Todos os prédios</option>
+              <option v-for="b in buildings" :key="b.id" :value="b.id">{{ b.name }}</option>
+            </select>
+            <AppButton variant="secondary" :loading="downloading" title="Quadro semanal, lista de turmas e ocupação das salas (XLSX)" @click="onDownloadTimetable">
+              Baixar quadro de horários
+            </AppButton>
+            <AppButton
+              variant="secondary"
+              :title="expanded ? 'Voltar ao layout normal (Esc)' : 'Expandir o cronograma para toda a janela'"
+              :aria-pressed="expanded"
+              @click="toggleExpanded"
+            >
+              <span aria-hidden="true">{{ expanded ? '⤡' : '⤢' }}</span> {{ expanded ? 'Recolher' : 'Expandir' }}
+            </AppButton>
+            <AppButton v-if="canManage" @click="openCreate()">Adicionar evento</AppButton>
+          </div>
         </div>
-      </template>
+
+        <AppEmptyState
+          v-if="gridRooms.length === 0"
+          title="Nenhuma sala"
+          description="Cadastre salas (e prédios) para montar o cronograma."
+        />
+        <template v-else>
+          <ScheduleGrid
+            :rooms="gridRooms"
+            :buildings="buildings"
+            :events="eventsForDate"
+            :turma-by-id="turmaById"
+            :can-manage="canManage"
+            :group-by-building="!selectedBuilding"
+            :highlight-id="highlightId"
+            @add-at="openCreate($event)"
+            @open="openEdit"
+            @remove="confirmTarget = $event"
+          />
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+            <span v-for="c in TURMA_CATEGORIES" :key="c.value" class="flex items-center gap-1.5">
+              <span class="h-3 w-3 rounded-sm" :class="categoryClasses(c.value).swatch" /> {{ c.plural }}
+            </span>
+            <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded-sm bg-gradient-to-r from-amber-400 via-rose-500 to-sky-500" /> Único (cor escolhida)</span>
+            <span v-if="canManage">Clique numa célula vazia para adicionar; clique num evento para editar.</span>
+          </div>
+        </template>
+      </div>
 
       <!-- lista: só eventos únicos -->
       <section class="flex flex-col gap-2">
