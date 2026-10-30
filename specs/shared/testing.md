@@ -139,11 +139,17 @@ O MSW intercepta as chamadas em runtime de teste — não é necessário um serv
 
 | Módulo | Unitário | Componente | Integração |
 |--------|----------|------------|------------|
-| Auth | `pending` | `pending` | `pending` |
-| Institutes | `pending` | `pending` | `pending` |
-| Projects | `pending` | `pending` | `pending` |
-| Data Upload | `pending` | `pending` | `pending` |
-| Allocation | `pending` | `pending` | `pending` |
-| Reports | `pending` | `pending` | `pending` |
+| Cliente HTTP (`services/api`) | `done` — refresh automático, refresh único em paralelo, `redirect` no login | — | — |
+| 01 Auth | `done` — `auth.service` | `pending` | `pending` |
+| 02 Institutes | `pending` | `pending` | `pending` |
+| 03 Projects | `pending` | `pending` | `pending` |
+| 04 Physical Structure | `pending` | `pending` | `pending` |
+| 05 Turmas | `partial` — helpers, importação, quadro de horários | `pending` | `pending` |
+| 06 Manual Allocation | `partial` — helpers, sugestões | `pending` | `pending` |
+| 07 Auto Allocation | `partial` — `autoAllocation` | `pending` | `pending` |
+| 08 Reports | `done` — grades, eventos únicos, planilha de ocupação, mapa de calor | `pending` | `pending` |
+| 09 Audit | `pending` | `pending` | `pending` |
+| 10 Dashboard | `done` — helpers | `pending` | `pending` |
+| 11 Professors | `partial` — helpers | `pending` | `pending` |
 
 > Atualizar esta tabela conforme os testes forem implementados.

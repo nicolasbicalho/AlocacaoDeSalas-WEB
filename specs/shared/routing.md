@@ -32,7 +32,7 @@
     turmas/import         → TurmaImportView     [aba Turmas] — roles: user (antes de :turmaId)
     turmas/:turmaId       → TurmaDetailView     [aba Turmas]
     allocation            → AllocationView      [aba Cronograma] — edição só user
-    reports               → ReportView          [aba Relatórios] — planejado (módulo 08)
+    reports               → ReportView          [aba Relatórios] — ?tab=occupancy|room|professor (módulo 08)
 
 /buildings                → BuildingListView (AppLayout) — roles: admin, user
 /buildings/new            → BuildingCreateView (AppLayout) — roles: user
@@ -59,7 +59,7 @@
 Projeto e prédio são **espaços de trabalho**: a rota pai (`/projects/:projectId`, `/buildings/:buildingId`) renderiza um *shell* com breadcrumb, título, status e **abas**, e as páginas internas são rotas filhas renderizadas no `<RouterView>` do shell.
 
 - O shell carrega a entidade **uma vez** e a entrega às abas por `provide/inject` (`useProjectContext()` / `useBuildingContext()`); as abas não refazem essa busca e atualizam o cabeçalho ao salvar (`setProject` / `setBuilding`). Existência e acesso (404/403) são tratados só no shell.
-- Cada rota filha declara em `meta` a aba ativa (`section`: `overview` | `turmas` | `allocation` | `rooms`) e, se for folha, o tipo (`leaf`: `new` | `detail`). O shell monta o breadcrumb a partir disso; páginas de detalhe informam o próprio nome via `leafLabel`.
+- Cada rota filha declara em `meta` a aba ativa (`section`: `overview` | `turmas` | `allocation` | `reports` | `rooms`) e, se for folha, o tipo (`leaf`: `new` | `detail`). O shell monta o breadcrumb a partir disso; páginas de detalhe informam o próprio nome via `leafLabel`.
 - As abas mostram contadores (turmas do projeto, salas do prédio), recarregados a cada navegação dentro do shell.
 - O `meta` das filhas é mesclado com o do pai: `roles` e `layout` vêm do shell, e as páginas `new` restringem a `user`.
 - Criar/desativar uma turma ou sala **volta para a aba da lista**; salvar edições permanece na página com um toast.
